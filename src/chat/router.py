@@ -10,7 +10,7 @@ from huggingface_hub import InferenceClient
 
 CLIENT_ID = "f732e32a-db6c-478b-b49e-5fa94bdfe939"
 SECRET = "acb87642-5f71-4cc2-9861-b756fbe2a681"
-HF_TOKEN = "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"
+HF_TOKEN = "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"
 
 def ask_gpt(messages: str) -> str:
     pass
