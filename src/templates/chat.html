@@ -1,0 +1,147 @@
+{% extends "base.html"%}
+
+{% block content %}
+<style>
+    /* Import a beautiful font from Google Fonts */
+    @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
+
+    /* Apply the font and style to h1 and h2 */
+    h1, h2 {
+        font-family: 'Roboto', sans-serif; /* Apply the font */
+    }
+
+    h1 {
+        font-size: 2.5em; /* Set font size for h1 */
+        color: #333; /* Dark color for better readability */
+        margin-bottom: 20px; /* Add space below the heading */
+    }
+
+    h2 {
+        font-size: 2em; /* Set font size for h2 */
+        color: #555; /* Slightly lighter color */
+        margin-bottom: 15px; /* Add space below the heading */
+    }
+
+    /* Style for the input field */
+    #messageText {
+        width: 83%; /* Increase the width */
+        padding: 10px; /* Add some padding for better readability */
+        font-size: 18px; /* Increase font size */
+        border: 2px solid #ccc; /* Add a border */
+        border-radius: 5px; /* Round the corners */
+        box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1); /* Add a subtle shadow */
+        resize: vertical;
+        min-height: 25px;
+        max-height: 85vh;
+        margin-top: 3px;
+    }
+
+    /* Style for the button */
+    button {
+        padding: 10px 20px; /* Increase padding for a larger clickable area */
+        margin: 10px; /* Add some margin for spacing */
+        font-size: 16px; /* Increase font size */
+        color: white; /* Button text color */
+        background-color: #007BFF; /* Button background color */
+        border: none; /* Remove default border */
+        border-radius: 5px; /* Round the corners */
+        cursor: pointer; /* Change cursor to pointer on hover */
+        box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1); /* Add a subtle shadow */
+        transition: background-color 0.3s ease; /* Smooth transition for hover effect */
+    }
+
+    /* Hover effect for the button */
+    button:hover {
+        background-color: #0056b3; /* Darker background on hover */
+    }
+
+    /* Style for the messages container */
+    #messages {
+        min-height: 85vh;
+        margin-left: 10px;
+        margin-right: 10px;
+        padding: 20px 0; /* Add some margin for spacing */
+        padding: 10px; /* Add padding for better readability */
+        border: 2px solid #ccc; /* Add a border */
+        border-radius: 10px; /* Round the corners */
+        box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1); /* Add a subtle shadow */
+        overflow-y: auto; /* Enable vertical scrolling if content overflows */
+        font-family: 'Roboto', sans-serif; /* Apply the font */
+        background-color: #fff; /* Set a background color */
+    }
+
+    /* Style for individual messages */
+    #messages li {
+        margin-bottom: 20px; /* Add some space between messages */
+        font-size: 18px; /* Ensure the font size matches the input field */
+    }
+
+    form {
+        margin-left: 1%;
+        position: sticky;
+        bottom: 10px;
+        display: flex;
+        align-items: end;
+    }
+    #select {
+        font-size: 18px;
+    }
+</style>
+
+
+<ul id='messages'>
+</ul>
+
+<form action="" onsubmit="sendMessage(event)">
+    <textarea type="text" id="messageText" placeholder="Задайте вопрос (желательно на английском во избежание ошибок)" autocomplete="off"></textarea>
+    <div>
+    <button>Send</button>
+        <select id="select">
+            <option value="Mistral_7B_Instruct">Mistral-7B-Instruct</option>
+            <option value="gemma_2b_it">gemma-2b-it</option>
+            <option value="giga">GigaChat</option>
+            <option value="chatgpt">ChatGpt</option>
+        </select>
+    </div>
+</form>
+
+<script>
+    var client_id = Date.now()
+
+    var wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    var wsUrl = `${wsProtocol}//${window.location.hostname}/ai/chat/ws/${client_id}`;
+    //var ws = new WebSocket(wsUrl);
+    var ws = new WebSocket(`ws://localhost:8000/ai/chat/ws/${client_id}`);
+    ws.onmessage = function(event) {
+        var messages = document.getElementById('messages')
+        var message = document.createElement('li')
+
+        var MsgData = event.data.split("```")
+        var content = document.createElement('li')
+        content.innerHTML+=(MsgData[0])
+
+        for (var i=1; i<MsgData.length; i++)
+            if (i%2==1)
+            {
+                let preElement = document.createElement('pre')
+                let codeElement = document.createElement('code')
+                codeElement.append("\n"+MsgData[i]+"\n")
+                preElement.append(codeElement)
+                hljs.highlightBlock(preElement)
+                content.append(preElement)
+            }
+            else content.append(MsgData[i])
+        //message.appendChild(content)
+        messages.appendChild(content)
+        window.scrollTo(0, document.body.scrollHeight);
+    };
+    function sendMessage(event) {
+        var value = document.querySelector("#select").value
+        var input = document.getElementById("messageText")
+        ws.send(input.value)
+        ws.send(value)
+        input.value = ''
+        event.preventDefault()
+    }
+</script>
+{% endblock %}
