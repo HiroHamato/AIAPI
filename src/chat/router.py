@@ -1,5 +1,6 @@
 import uuid
 import json
+from chat.database import insert_into_bd,start_bd
 from http import cookies
 import requests
 from requests.auth import HTTPBasicAuth
@@ -7,10 +8,11 @@ from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 from fastapi.responses import HTMLResponse
 from huggingface_hub import InferenceClient
 
-
 CLIENT_ID = "f732e32a-db6c-478b-b49e-5fa94bdfe939"
 SECRET = "acb87642-5f71-4cc2-9861-b756fbe2a681"
-HF_TOKEN = "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"
+HF_TOKEN = "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"
+
+hist=[]
 
 def ask_gpt(messages: str) -> str:
     pass
@@ -21,26 +23,48 @@ def ask_Mistral_7B_Instruct(messages: str) -> str:
         token=HF_TOKEN,
     )
     answer = ""
+    hist.append({"role": "user", "content": f"{messages}" })
+    insert_into_bd("user",messages,1)
     for message in client.chat_completion(
-        messages=[{"role": "user", "content": f"{messages}" }],
+        messages=hist,
         max_tokens=9000,
         stream=True,
     ):
         answer+=message.choices[0].delta.content
+    hist.append({"role": "assistant", "content": f"{answer}" })
+    insert_into_bd("assistant",answer,1)
     return answer
 
-def ask_gemma_2b_it(messages: str) -> str:
+def ask_Mistral_Nemo_Instruct(messages: str) -> str:
     client = InferenceClient(
-        "google/gemma-2b-it",
+        "mistralai/Mistral-Nemo-Instruct-2407",
         token=HF_TOKEN,
     )
     answer = ""
+    hist.append({"role": "user", "content": f"{messages}" })
     for message in client.chat_completion(
-        messages=[{"role": "user", "content": f"{messages}" }],
+        messages=hist,
         max_tokens=9000,
         stream=True,
     ):
         answer+=message.choices[0].delta.content
+    hist.append({"role": "assistant", "content": f"{answer}" })
+    return answer
+
+def ask_Mixtral_8x7B(messages: str) -> str:
+    client = InferenceClient(
+        "mistralai/Mixtral-8x7B-Instruct-v0.1",
+        token=HF_TOKEN,
+    )
+    answer = ""
+    hist.append({"role": "user", "content": f"{messages}" })
+    for message in client.chat_completion(
+        messages=hist,
+        max_tokens=9000,
+        stream=True,
+    ):
+        answer+=message.choices[0].delta.content
+    hist.append({"role": "assistant", "content": f"{answer}" })
     return answer
 
 def get_access_token() -> str:
@@ -110,11 +134,12 @@ class ConnectionManager:
             await connection.send_text(message)
 
 
-manager = ConnectionManager()
 
 
 @router.websocket("/ws/{client_id}")
 async def websocket_endpoint(websocket: WebSocket, client_id: int):
+    manager = ConnectionManager()
+    start_bd()
     await manager.connect(websocket)
     try:
         while True:
@@ -127,8 +152,10 @@ async def websocket_endpoint(websocket: WebSocket, client_id: int):
                 await manager.send_personal_message(f"Assistent: {ask_gpt(data)}", websocket)
             elif value == "Mistral_7B_Instruct":
                 await manager.send_personal_message(f"Assistent: {ask_Mistral_7B_Instruct(data)}", websocket)
-            elif value == "gemma_2b_it":
-                await manager.send_personal_message(f"Assistent: {ask_gemma_2b_it(data)}", websocket)
+            elif value == "Mistral_Nemo_Instruct":
+                await manager.send_personal_message(f"Assistent: {ask_Mistral_Nemo_Instruct(data)}", websocket)
+            elif value == "Mixtral_8x7B":
+                await manager.send_personal_message(f"Assistent: {ask_Mixtral_8x7B(data)}", websocket)
 
     except WebSocketDisconnect:
         manager.disconnect(websocket)

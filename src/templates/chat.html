@@ -98,7 +98,8 @@
     <button>Send</button>
         <select id="select">
             <option value="Mistral_7B_Instruct">Mistral-7B-Instruct</option>
-            <option value="gemma_2b_it">gemma-2b-it</option>
+            <option value="Mistral_Nemo_Instruct">Mistral-Nemo-Instruct</option>
+            <option value="Mixtral_8x7B">Mixtral-8x7B</option>
             <option value="giga">GigaChat</option>
             <option value="chatgpt">ChatGpt</option>
         </select>
@@ -110,8 +111,8 @@
 
     var wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
     var wsUrl = `${wsProtocol}//${window.location.hostname}/ai/chat/ws/${client_id}`;
-    var ws = new WebSocket(wsUrl);
-    //var ws = new WebSocket(`ws://localhost:8000/ai/chat/ws/${client_id}`);
+    //var ws = new WebSocket(wsUrl);
+    var ws = new WebSocket(`ws://localhost:8000/ai/chat/ws/${client_id}`);
     ws.onmessage = function(event) {
         var messages = document.getElementById('messages')
         var message = document.createElement('li')

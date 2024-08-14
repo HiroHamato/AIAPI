@@ -4,6 +4,8 @@ from fastapi.staticfiles import StaticFiles
 
 from pages.router import router as router_pages
 from chat.router import router as router_chat
+from chat.database import start_bd
+
 
 app = FastAPI(
     title="DL App"
@@ -11,6 +13,7 @@ app = FastAPI(
 
 app.include_router(router_pages)
 app.include_router(router_chat)
+    
 
 origins = [
     "http://localhost:3000",
