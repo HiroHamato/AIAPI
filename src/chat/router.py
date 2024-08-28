@@ -1,6 +1,7 @@
 import uuid
+import os
 import json
-from chat.database import insert_into_bd,start_bd
+#from chat.database import insert_into_bd,start_bd
 from http import cookies
 import requests
 from requests.auth import HTTPBasicAuth
@@ -8,9 +9,11 @@ from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 from fastapi.responses import HTMLResponse
 from huggingface_hub import InferenceClient
 
-CLIENT_ID = ""
-SECRET = ""
-HF_TOKEN = ""
+
+
+CLIENT_ID = os.getenv("CLIENT_ID")
+SECRET = os.getenv("SBER_SECRET")
+HF_TOKEN = os.getenv("HF_TOKEN")        
 
 hist=[]
 
@@ -24,7 +27,7 @@ def ask_Mistral_7B_Instruct(messages: str) -> str:
     )
     answer = ""
     hist.append({"role": "user", "content": f"{messages}" })
-    insert_into_bd("user",messages,1)
+    #insert_into_bd("user",messages,1)
     for message in client.chat_completion(
         messages=hist,
         max_tokens=9000,
@@ -32,7 +35,7 @@ def ask_Mistral_7B_Instruct(messages: str) -> str:
     ):
         answer+=message.choices[0].delta.content
     hist.append({"role": "assistant", "content": f"{answer}" })
-    insert_into_bd("assistant",answer,1)
+    #insert_into_bd("assistant",answer,1)
     return answer
 
 def ask_Mistral_Nemo_Instruct(messages: str) -> str:
@@ -139,7 +142,7 @@ class ConnectionManager:
 @router.websocket("/ws/{client_id}")
 async def websocket_endpoint(websocket: WebSocket, client_id: int):
     manager = ConnectionManager()
-    start_bd()
+    #start_bd()
     await manager.connect(websocket)
     try:
         while True:

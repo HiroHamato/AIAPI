@@ -4,7 +4,6 @@ from fastapi.staticfiles import StaticFiles
 
 from pages.router import router as router_pages
 from chat.router import router as router_chat
-from chat.database import start_bd
 
 
 app = FastAPI(

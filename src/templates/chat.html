@@ -116,7 +116,6 @@
     ws.onmessage = function(event) {
         var messages = document.getElementById('messages')
         var message = document.createElement('li')
-
         var MsgData = event.data.split("```")
         var content = document.createElement('li')
         content.innerHTML+=(MsgData[0])
@@ -124,6 +123,7 @@
         for (var i=1; i<MsgData.length; i++)
             if (i%2==1)
             {
+                MsgData[i] = MsgData[i].substr(MsgData[i].indexOf("\n")+1)
                 let preElement = document.createElement('pre')
                 let codeElement = document.createElement('code')
                 codeElement.append("\n"+MsgData[i]+"\n")
