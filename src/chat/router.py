@@ -219,4 +219,5 @@ async def websocket_endpoint(websocket: WebSocket, client_id: int):
                 await manager.send_personal_message(f"Assistent:\n {ask_Gemma_7b(data, client_id)}", websocket) 
 
     except WebSocketDisconnect:
+        del hist[client_id]
         manager.disconnect(websocket)
