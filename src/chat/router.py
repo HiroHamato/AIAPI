@@ -18,110 +18,110 @@ SC_TOKEN = os.getenv("SC_TOKEN")
 MIST_TOKEN = os.getenv("MIST_TOKEN")
 GROQ_TOKEN = os.getenv("GROQ_TOKEN")
 
-hist=[]
+hist=dict([])
 
 def ask_gpt(messages: str) -> str:
     pass
     
-def ask_Mistral_7B_Instruct(messages: str) -> str:
+def ask_Mistral_7B_Instruct(messages: str, user_id: int) -> str:
     client = InferenceClient(
         "mistralai/Mistral-7B-Instruct-v0.2",
         token=HF_TOKEN,
     )
     answer = ""
-    hist.append({"role": "user", "content": f"{messages}" })
+    hist[user_id].append({"role": "user", "content": f"{messages}" })
     #insert_into_bd("user",messages,1)
     for message in client.chat_completion(
-        messages=hist,
+        messages=hist[user_id],
         max_tokens=9000,
         stream=True,
     ):
         answer+=message.choices[0].delta.content
-    hist.append({"role": "assistant", "content": f"{answer}" })
+    hist[user_id].append({"role": "assistant", "content": f"{answer}" })
     #insert_into_bd("assistant",answer,1)
     return answer
 
-def ask_Mistral_Nemo_Instruct(messages: str) -> str:
+def ask_Mistral_Nemo_Instruct(messages: str, user_id: int) -> str:
     client = InferenceClient(
         "mistralai/Mistral-Nemo-Instruct-2407",
         token=HF_TOKEN,
     )
     answer = ""
-    hist.append({"role": "user", "content": f"{messages}" })
+    hist[user_id].append({"role": "user", "content": f"{messages}" })
     for message in client.chat_completion(
-        messages=hist,
+        messages=hist[user_id],
         max_tokens=9000,
         stream=True,
     ):
         answer+=message.choices[0].delta.content
-    hist.append({"role": "assistant", "content": f"{answer}" })
+    hist[user_id].append({"role": "assistant", "content": f"{answer}" })
     return answer
 
-def ask_Mixtral_8x7B(messages: str) -> str:
-    client = InferenceClient(
+def ask_Mixtral_8x7B(messages: str, user_id: int) -> str:
+    client = InferenceClient(   
         "mistralai/Mixtral-8x7B-Instruct-v0.1",
         token=HF_TOKEN,
     )
     answer = ""
-    hist.append({"role": "user", "content": f"{messages}" })
+    hist[user_id].append({"role": "user", "content": f"{messages}" })
     for message in client.chat_completion(
-        messages=hist,
+        messages=hist[user_id],
         max_tokens=9000,
         stream=True,
     ):
         answer+=message.choices[0].delta.content
-    hist.append({"role": "assistant", "content": f"{answer}" })
+    hist[user_id].append({"role": "assistant", "content": f"{answer}" })
     return answer
 
-def ask_Meta_Llama_3_1_70B_Instruct(messages: str) -> str:
-    hist.append({"role": "user", "content": f"{messages}" })
+def ask_Meta_Llama_3_1_70B_Instruct(messages: str, user_id: int) -> str:
+    hist[user_id].append({"role": "user", "content": f"{messages}" })
     obj = json.loads((requests.post('https://api.sambanova.ai/v1/chat/completions', json={
         "model": "Meta-Llama-3.1-70B-Instruct",
-        "messages": hist,
+        "messages": hist[user_id],
         "max_tokens": 9000
     }, headers={
         'Authorization': f'Bearer {SC_TOKEN}',
     }).content))
     try:
-        hist.append({"role": "assistant", "content": f"{obj['choices'][0]['message']['content']}" })
+        hist[user_id].append({"role": "assistant", "content": f"{obj['choices'][0]['message']['content']}" })
         return obj['choices'][0]['message']['content']
     except Exception:
         print(obj)
         return 'Что то пошло не так'
 
-def ask_Mixtral_8x22b(messages: str) -> str:
-    hist.append({"role": "user", "content": f"{messages}" })
+def ask_Mixtral_8x22b(messages: str, user_id: int) -> str:
+    hist[user_id].append({"role": "user", "content": f"{messages}" })
     obj = json.loads((requests.post('https://api.mistral.ai/v1/chat/completions', json={
         "model": "open-mixtral-8x22b",
-        "messages": hist,
+        "messages": hist[user_id],
         "max_tokens": 9000
     }, headers={
         'Authorization': f'Bearer {MIST_TOKEN}',
     }).content))
     try:
-        hist.append({"role": "assistant", "content": f"{obj['choices'][0]['message']['content']}" })
+        hist[user_id].append({"role": "assistant", "content": f"{obj['choices'][0]['message']['content']}" })
         return obj['choices'][0]['message']['content']
     except Exception:
         print(obj)
         return 'Что то пошло не так'
 
-def ask_Gemma_7b(messages: str) -> str:
-    hist.append({"role": "user", "content": f"{messages}" })
+def ask_Gemma_7b(messages: str, user_id: int) -> str:
+    hist[user_id].append({"role": "user", "content": f"{messages}" })
     obj = json.loads((requests.post('https://api.groq.com/openai/v1/chat/completions', json={
         "model": "gemma-7b-it",
-        "messages": hist,
+        "messages": hist[user_id],
         "max_tokens": 9000
     }, headers={
         'Authorization': f'Bearer {GROQ_TOKEN}',
     }).content))
     try:
-        hist.append({"role": "assistant", "content": f"{obj['choices'][0]['message']['content']}" })
+        hist[user_id].append({"role": "assistant", "content": f"{obj['choices'][0]['message']['content']}" })
         return obj['choices'][0]['message']['content']
     except Exception:
         print(obj)
         return 'Что то пошло не так'
 
-def get_access_token() -> str:
+def get_access_token() -> str:    
     url = "https://ngw.devices.sberbank.ru:9443/api/v2/oauth"
     headers = {
         'Content-Type': 'application/x-www-form-urlencoded',
@@ -194,6 +194,7 @@ class ConnectionManager:
 async def websocket_endpoint(websocket: WebSocket, client_id: int):
     manager = ConnectionManager()
     #start_bd()
+    hist[client_id] = []
     await manager.connect(websocket)
     try:
         while True:
@@ -205,17 +206,17 @@ async def websocket_endpoint(websocket: WebSocket, client_id: int):
             elif value == "chatgpt":
                 await manager.send_personal_message(f"Assistent:\n {ask_gpt(data)}", websocket)
             elif value == "Mistral_7B_Instruct":
-                await manager.send_personal_message(f"Assistent:\n {ask_Mistral_7B_Instruct(data)}", websocket)
+                await manager.send_personal_message(f"Assistent:\n {ask_Mistral_7B_Instruct(data, client_id)}", websocket)
             elif value == "Mistral_Nemo_Instruct":
-                await manager.send_personal_message(f"Assistent:\n {ask_Mistral_Nemo_Instruct(data)}", websocket)
+                await manager.send_personal_message(f"Assistent:\n {ask_Mistral_Nemo_Instruct(data, client_id)}", websocket)
             elif value == "Mixtral_8x7B":
-                await manager.send_personal_message(f"Assistent:\n {ask_Mixtral_8x7B(data)}", websocket)
+                await manager.send_personal_message(f"Assistent:\n {ask_Mixtral_8x7B(data, client_id)}", websocket)
             elif value == "Meta_Llama_3_1_70B_Instruct":
-                await manager.send_personal_message(f"Assistent:\n {ask_Meta_Llama_3_1_70B_Instruct(data)}", websocket)
+                await manager.send_personal_message(f"Assistent:\n {ask_Meta_Llama_3_1_70B_Instruct(data, client_id)}", websocket)
             elif value == "Mixtral_8x22b":
-                await manager.send_personal_message(f"Assistent:\n {ask_Mixtral_8x22b(data)}", websocket)
+                await manager.send_personal_message(f"Assistent:\n {ask_Mixtral_8x22b(data, client_id)}", websocket)
             elif value == "Gemma_7b":
-                await manager.send_personal_message(f"Assistent:\n {ask_Gemma_7b(data)}", websocket) 
+                await manager.send_personal_message(f"Assistent:\n {ask_Gemma_7b(data, client_id)}", websocket) 
 
     except WebSocketDisconnect:
         manager.disconnect(websocket)
