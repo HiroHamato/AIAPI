@@ -78,7 +78,7 @@ def ask_Meta_Llama_3_1_70B_Instruct(messages: str) -> str:
     obj = json.loads((requests.post('https://api.sambanova.ai/v1/chat/completions', json={
         "model": "Meta-Llama-3.1-70B-Instruct",
         "messages": hist,
-        "max_tokens": 1000
+        "max_tokens": 9000
     }, headers={
         'Authorization': f'Bearer {SC_TOKEN}',
     }).content))
@@ -94,7 +94,7 @@ def ask_Mixtral_8x22b(messages: str) -> str:
     obj = json.loads((requests.post('https://api.mistral.ai/v1/chat/completions', json={
         "model": "open-mixtral-8x22b",
         "messages": hist,
-        "max_tokens": 1000
+        "max_tokens": 9000
     }, headers={
         'Authorization': f'Bearer {MIST_TOKEN}',
     }).content))
@@ -110,7 +110,7 @@ def ask_Gemma_7b(messages: str) -> str:
     obj = json.loads((requests.post('https://api.groq.com/openai/v1/chat/completions', json={
         "model": "gemma-7b-it",
         "messages": hist,
-        "max_tokens": 1000
+        "max_tokens": 9000
     }, headers={
         'Authorization': f'Bearer {GROQ_TOKEN}',
     }).content))
