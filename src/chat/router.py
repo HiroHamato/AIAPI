@@ -110,7 +110,7 @@ def ask_Gemma_7b(messages: str, user_id: int) -> str:
     obj = json.loads((requests.post('https://api.groq.com/openai/v1/chat/completions', json={
         "model": "gemma-7b-it",
         "messages": hist[user_id],
-        "max_tokens": 9000
+        "max_tokens": 8190
     }, headers={
         'Authorization': f'Bearer {GROQ_TOKEN}',
     }).content))
