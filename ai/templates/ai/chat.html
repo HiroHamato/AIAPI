@@ -167,8 +167,8 @@
 
     var wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
     var wsUrl = `${wsProtocol}//${window.location.hostname}/ai/chat/ws/${client_id}`;
-    //var ws = new WebSocket(wsUrl);
-    var ws = new WebSocket(`ws://localhost:8000/ai/chat/ws/${client_id}`);
+    var ws = new WebSocket(wsUrl);
+    //var ws = new WebSocket(`ws://localhost:8000/ai/chat/ws/${client_id}`);
 
     ws.onmessage = function(event) {
         var messages = document.getElementById('messages')
