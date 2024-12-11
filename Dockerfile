@@ -12,4 +12,4 @@ COPY . /app
 
 RUN pip install --default-timeout=100 -r requirements.txt
 
-CMD ["daphne", "-p", "8000", "DjangoTest.asgi:application"]
+CMD ["daphne", "-p", "8000", "-b", "0.0.0.0", "DjangoTest.asgi:application"]
