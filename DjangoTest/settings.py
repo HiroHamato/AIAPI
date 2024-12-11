@@ -31,7 +31,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = [ 
     "dl.gsu.by",
-    "dlai.gsu.by"
+    "dlai.gsu.by",
     "127.0.0.1",
     "localhost",
     ]
