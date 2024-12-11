@@ -30,12 +30,8 @@ SECRET_KEY = os.getenv("SECRET_KEY")
 DEBUG = True
 
 ALLOWED_HOSTS = [ 
-    "http://localhost:3000",
-    "http://localhost:7333",
-    "http://localhost:8000",
-    "http://dl",
-    "http://dl.gsu.by",
-    "https://dl.gsu.by",
+    "dl.gsu.by",
+    "dlai.gsu.by"
     "127.0.0.1",
     "localhost",
     ]
