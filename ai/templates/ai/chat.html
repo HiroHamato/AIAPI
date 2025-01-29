@@ -1,0 +1,377 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+        <!-- Import Google Fonts -->
+        <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/default.min.css">
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+        
+        <!-- and it's easy to individually load additional languages -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/go.min.js"></script>
+        <script>hljs.initHighlightingOnLoad();</script>
+    
+    <style>
+        /* Apply the imported font to the whole document */
+        body {
+            font-family: 'Roboto', sans-serif;
+            margin: 0;
+            height: 100%;
+            width: 100%;
+        }
+        #content {
+            height: 100%;
+            width: 100%;
+        }
+    </style>
+    <title>DLAPI</title>
+</head>
+<body>
+
+    <div id="content">
+                
+        <style>
+            /* Import a beautiful font from Google Fonts */
+            @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
+
+            /* Apply the font and style to h1 and h2 */
+            h1, h2 {
+                font-family: 'Roboto', sans-serif; /* Apply the font */
+            }
+
+            h1 {
+                font-size: 2.5em; /* Set font size for h1 */
+                color: #333; /* Dark color for better readability */
+                margin-bottom: 20px; /* Add space below the heading */
+            }
+
+            h2 {
+                font-size: 2em; /* Set font size for h2 */
+                color: #555; /* Slightly lighter color */
+                margin-bottom: 15px; /* Add space below the heading */
+            }
+
+            /* Style for the input field */
+            #messageText {
+                width: 100%; /* Increase the width */
+                font-size: 18px; /* Increase font size */
+                border: 2px solid #ccc; /* Add a border */
+                border-radius: 10px; /* Round the corners */
+                box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1); /* Add a subtle shadow */
+                resize: none;
+                height: 85vh;
+                margin-top: 2vh;
+            }
+
+            /* Style for the button */
+            button {
+                padding: 10px 20px; /* Increase padding for a larger clickable area */
+                margin: 10px; /* Add some margin for spacing */
+                font-size: 16px; /* Increase font size */
+                color: white; /* Button text color */
+                background-color: #007BFF; /* Button background color */
+                border: none; /* Remove default border */
+                border-radius: 5px; /* Round the corners */
+                cursor: pointer; /* Change cursor to pointer on hover */
+                box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1); /* Add a subtle shadow */
+                transition: background-color 0.3s ease; /* Smooth transition for hover effect */
+            }
+
+            /* Hover effect for the button */
+            button:hover {
+                background-color: #0056b3; /* Darker background on hover */
+            }
+
+            /* Style for the messages container */
+            #messages {
+                height: 94vh;
+                width: 100vw;
+                margin-left: 10px;
+                margin-right: 10px;
+                padding: 20px 0; /* Add some margin for spacing */
+                padding: 10px; /* Add padding for better readability */
+                border: 2px solid #ccc; /* Add a border */
+                border-radius: 10px; /* Round the corners */
+                box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1); /* Add a subtle shadow */
+                overflow-y: auto; /* Enable vertical scrolling if content overflows */
+                font-family: 'Roboto', sans-serif; /* Apply the font */
+                background-color: #fff; /* Set a background color */
+            }
+
+            /* Style for individual messages */
+            #messages li {
+                margin-bottom: 20px; /* Add some space between messages */
+                font-size: 18px; /* Ensure the font size matches the input field */
+            }
+
+            form {
+                display: flex;
+                flex-direction: column;
+                margin-right: 1vw;
+                padding-left: 40px;
+                width: 30vw;
+                max-width: 94vw;
+            }
+            #select, #selectType, #selectLang {
+                font-size: 18px;
+                max-width: 77%;
+            }
+            .blo {
+                display: flex;
+                justify-content: space-between;
+                align-items: flex-start;
+            }
+            .resize-button {
+                left: 2;
+                top: 13px;
+                position: absolute;
+                height: 98%; /* Высота кнопки на всю высоту textarea */
+                width: 30px; /* Ширина кнопки */
+                background-color: #d8d8d8;
+                cursor: ew-resize; /* Указатель для изменения размера по горизонтали */
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: white;
+                box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+                transition: background-color 0.3s ease;
+                font-size: 32px;
+                color: black;
+            }
+            .check {
+                font-family: 'Roboto';
+                font-weight: 600;
+            }
+            .dv {
+                display: flex;
+            }
+
+        /* left menu */
+        .toggle-button {
+            margin: 0;
+            position: absolute;
+            top: 10px;
+            right: 0; /* прилепляем к правому краю */
+            border: none;
+            background-color: transparent;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            z-index: 1001;
+            height: 50px;
+            background-color: rgb(207, 205, 205);
+            border-radius: 30px 0 0 30px; /* полукруг */
+        }
+         .toggle-button::before{
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -30px; /* придвигаем к краю */
+            width: 30px; /* ширина фона */
+            height: 100%; /*высота фона*/
+            transition: all 0.3s ease;
+            z-index: -1; /* фон под кнопкой */
+         }
+          .toggle-button:hover{
+              background-color: rgb(119, 119, 119);
+          }
+        .sidebar {
+            position: fixed;
+            top: 0;
+            right: -300px; /* Изменено: убираем за правый край */
+            width: 300px;
+            height: 100%;
+            background-color: white;
+            box-shadow: -2px 0 5px rgba(0,0,0,0.2); /* Тень с левой стороны */
+            transition: transform 0.3s ease-in-out;
+            display: flex;
+            flex-direction: column;
+            border-left: 1px solid rgba(0, 0, 0, 0.1); /* Граница слева */
+            z-index: 1000;
+        }
+        .sidebar-header {
+            padding: 15px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        }
+        .sidebar-content {
+            padding: 15px;
+            flex: 1;
+        }
+        .sidebar.open {
+            transform: translateX(-300px); /* Изменено: выезжает влево */
+        }
+        .sidebar.open + .toggle-button{
+            transform: translateX(-300px); /* Изменено: перемещаем кнопку влево */
+        }
+       .toggle-button svg{
+           transition: transform 0.3s ease;
+           transform: rotate(180deg); /* Поворачиваем иконку по умолчанию*/
+       }
+       .sidebar.open + .toggle-button svg {
+           transform: rotate(0deg);/* Поворачиваем иконку обратно */
+       }
+        </style>
+
+        <div class="blo">
+            <ul id='messages'>
+            </ul>
+            <div class="dv">
+                <div class="resize-button" onmousedown="startResize(event)">🠔</div>
+                <form action="" onsubmit="sendMessage(event)">
+                    <textarea type="text" id="messageText" placeholder="Задайте вопрос (желательно на английском во избежание ошибок)" autocomplete="off"></textarea>
+                    <div>
+                        <button>Send</button>
+                        <button type="button" onclick="clearContext()">Clear Context</button>
+                        <select id="selectLang">
+                            <option language="Russian">Русский</option>
+                            <option language="English">English</option>
+                            <option language="French">Français</option>
+                        </select>
+                        <select id="select">
+                            <option value="Meta_Llama_3_1_70B_Instruct">Meta-Llama-3-1-70B-Instruct</option>
+                            <option value="Mixtral_8x7B">Mixtral-8x7B</option>
+                            <option value="Mixtral_8x22b">Mixtral-8x22b</option>
+                            <option value="Gemma_7b">Gemma-7b</option>
+                        </select>
+                        <select id="selectType"  onchange="document.location.href=this.querySelector('option:checked').dataset.link">
+                            <option selected>Чат с DLAI</option>
+                            <option data-link="/ai/decide-task/">Реши задачу</option>
+                            <option data-link="/ai/find-error/">В чём ошибка?</option>
+                        </select>
+                        <div class="check">
+                            <input type="checkbox" class="inp" checked> При нажатии на Enter будет отправлятся вопрос(для переноса строки Enter+Shift)
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    
+        <div class="sidebar">
+            <div class="sidebar-header">
+            Админ-Панель
+            </div>
+        <div class="sidebar-content">
+        </div>
+        </div>
+        <button class="toggle-button">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="9 18 15 12 9 6"/>
+            </svg>
+        </button>
+        
+        <script src="https://cdn.jsdelivr.net/npm/marked/lib/marked.umd.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/marked-highlight/lib/index.umd.js"></script>
+        <script>
+            // start of websocket
+            var client_id = Date.now()
+
+            var wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            var wsUrl = `${wsProtocol}//${window.location.hostname}/ai/chat/ws/${client_id}`;
+            var ws = new WebSocket(wsUrl);
+            //var ws = new WebSocket(`ws://localhost:8000/ai/chat/ws/${client_id}`);
+
+            ws.onmessage = function(event) {
+                var messages = document.getElementById('messages')
+                var message = document.createElement('li')
+                var content = document.createElement('li')
+                content.innerHTML += markedd.parse(event.data)
+                messages.appendChild(content)
+                messages.scrollTo({top: messages.scrollHeight, behavior: 'smooth'});
+                var input = document.getElementById("messageText")
+                input.value = ''
+                notEnter = false
+            };
+
+            function sendMessage(event) {
+                event.preventDefault();  // Эта строка вызывает ошибку, если event не передан
+                if (ws.readyState === WebSocket.OPEN) {
+                    var value = document.querySelector("#select").value;
+                    var language = document.querySelector("#selectLang").value;
+                    var input = document.getElementById("messageText");
+                    ws.send(JSON.stringify({
+                        type: '1',
+                        message: input.value, 
+                        value: value, 
+                        language: language,
+                    }));
+                    input.value = '';
+                } else {
+                    console.log("WebSocket is not open: " + ws.readyState);
+                }
+            }
+
+
+            // Функция очистки контекста (истории переписки) ИИ
+            function clearContext() {
+                if (ws.readyState === WebSocket.OPEN) {
+                    ws.send(JSON.stringify({action: 'clear_context'}));
+                } else {
+                    console.log("WebSocket is not open: " + ws.readyState);
+                }
+            }
+
+            // end websocket
+
+
+
+            const toggleButton = document.querySelector('.toggle-button');
+            const sidebar = document.querySelector('.sidebar');
+
+            toggleButton.addEventListener('click', () => {
+                sidebar.classList.toggle('open');
+            });
+
+            let notEnter = false
+            const {markedHighlight} = globalThis.markedHighlight;
+            const {Marked} = globalThis.marked;
+            const markedd = new Marked(
+                markedHighlight({
+                    langPrefix: 'hljs language-',
+                    highlight(code, lang, info)
+                    {
+                        const language = hljs.getLanguage(lang) ? lang : 'plaintext';
+                        return hljs.highlight(code, { language }).value;
+                    }
+                })
+            );
+
+            let isResizing = false;
+
+            function startResize(event) {
+                isResizing = true;
+                window.addEventListener('mousemove', resize);
+                window.addEventListener('mouseup', stopResize);
+            }
+
+            function resize(event) {
+                if (isResizing) {
+                    const container = document.querySelector('form');
+                    const newWidth = container.getBoundingClientRect().right - event.clientX;
+                    const minWidth = 400; // Минимальная ширина textarea
+                    if (newWidth > minWidth) {
+                        container.style.width = `${newWidth}px`;
+                    }
+                }
+            }
+
+            function stopResize() {
+                isResizing = false;
+                window.removeEventListener('mousemove', resize);
+                window.removeEventListener('mouseup', stopResize);
+            }
+
+            document.addEventListener("keydown", function(event) {
+                const checkbox = document.querySelector(".inp");
+                if (event.key === "Enter" && checkbox.checked && !event.shiftKey && !notEnter) {
+                    notEnter=true
+                    sendMessage(event);
+                }
+            });
+
+
+        </script>
+    </div>
+</body>
+</html>
