@@ -36,7 +36,9 @@
         <style>
             /* Import a beautiful font from Google Fonts */
             @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
-
+            select {
+                text-align: center;
+            }
             /* Apply the font and style to h1 and h2 */
             h1, h2 {
                 font-family: 'Roboto', sans-serif; /* Apply the font */
@@ -62,8 +64,8 @@
                 border-radius: 10px; /* Round the corners */
                 box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1); /* Add a subtle shadow */
                 resize: none;
-                height: 85vh;
-                margin-top: 2vh;
+                height: 75vh;
+                margin-top: 1vh;
             }
 
             /* Style for the button */
@@ -115,7 +117,7 @@
                 width: 30vw;
                 max-width: 94vw;
             }
-            #select, #selectType, #selectLang {
+            #select, #selectType, #selectLang, #selectProgLng, #selectTheme {
                 font-size: 18px;
                 max-width: 77%;
             }
@@ -141,12 +143,23 @@
                 font-size: 32px;
                 color: black;
             }
-            .check {
+            .check, .top-preprompt {
+                margin-top: 0.5vh;
                 font-family: 'Roboto';
                 font-weight: 600;
             }
-            .dv {
+            .dv, .top-dv {
                 display: flex;
+            }
+            .top-dv {
+                justify-content: space-between;
+                margin-top: 2vh;
+            }
+            .top-dv select {
+                width: 45%;
+            }
+            .top-preprompt {
+                font-size: 18px;
             }
 
         /* left menu */
@@ -220,34 +233,58 @@
             <div class="dv">
                 <div class="resize-button" onmousedown="startResize(event)">🠔</div>
                 <form action="" onsubmit="sendMessage(event)">
+                    <div class="top-dv">
+                        <select id="selectProgLng"> 
+                            <option value="python">Python</option>
+                            <option value="cpp">C++</option>
+                            <option value="pascal">Pascal</option>
+                        </select>
+                        <select id="selectTheme"> 
+                            <option>Одномерный массив</option>
+                            <option>Двумерный массив</option>
+                            <option>Строки</option>
+                            <option>Сортировка</option>
+                            <option>Очередь</option>
+                        </select>
+                    </div>
+                    <div class="top-preprompt">
+                        Препромпт:
+                        <select id="selectTheme"> 
+                            <option>Одномерный массив</option>
+                            <option>Двумерный массив</option>
+                            <option>Строки</option>
+                            <option>Сортировка</option>
+                            <option>Очередь</option>
+                        </select>
+                        
+                    </div>
                     <textarea type="text" id="messageText" placeholder="Задайте вопрос (желательно на английском во избежание ошибок)" autocomplete="off"></textarea>
                     <div>
-                        <button>Send</button>
-                        <button type="button" onclick="clearContext()">Clear Context</button>
-                        <select id="selectLang">
-                            <option language="Russian">Русский</option>
-                            <option language="English">English</option>
-                            <option language="French">Français</option>
-                        </select>
-                        <select id="select">
-                            <option value="Meta_Llama_3_1_70B_Instruct">Meta-Llama-3-1-70B-Instruct</option>
-                            <option value="Mixtral_8x7B">Mixtral-8x7B</option>
-                            <option value="Mixtral_8x22b">Mixtral-8x22b</option>
-                            <option value="Gemma_7b">Gemma-7b</option>
-                        </select>
-                        <select id="selectType"  onchange="document.location.href=this.querySelector('option:checked').dataset.link">
-                            <option selected>Чат с DLAI</option>
-                            <option data-link="/ai/decide-task/">Реши задачу</option>
-                            <option data-link="/ai/find-error/">В чём ошибка?</option>
-                        </select>
-                        <div class="check">
-                            <input type="checkbox" class="inp" checked> При нажатии на Enter будет отправлятся вопрос(для переноса строки Enter+Shift)
-                        </div>
+                    <button>Send</button>
+                    <button type="button" onclick="clearContext()">Clear Context</button>
+                    <select id="selectLang">
+                        <option language="Russian">Русский</option>
+                        <option language="English">English</option>
+                        <option language="French">Français</option>
+                    </select>
+                    <select id="select">
+                        <option value="Meta_Llama_3_1_70B_Instruct">Meta-Llama-3-1-70B-Instruct</option>
+                        <option value="Mixtral_8x7B">Mixtral-8x7B</option>
+                        <option value="Mixtral_8x22b">Mixtral-8x22b</option>
+                        <option value="Gemma_7b">Gemma-7b</option>
+                    </select>
+                    <select id="selectType"  onchange="document.location.href=this.querySelector('option:checked').dataset.link">
+                        <option data-link="/ai/chat/">Чат с DLAI</option>
+                        <option selected>Реши задачу</option>
+                        <option data-link="/ai/find-error/">В чём ошибка?</option>
+                    </select>
+                    <div class="check">
+                        <input type="checkbox" class="inp" checked> При нажатии на Enter будет отправлятся вопрос(для переноса строки Enter+Shift)
+                    </div>
                     </div>
                 </form>
             </div>
         </div>
-    
         <div class="sidebar">
             <div class="sidebar-header">
             Админ-Панель
@@ -264,6 +301,7 @@
         <script src="https://cdn.jsdelivr.net/npm/marked/lib/marked.umd.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/marked-highlight/lib/index.umd.js"></script>
         <script>
+
             // start of websocket
             var client_id = Date.now()
 
@@ -290,11 +328,13 @@
                     var value = document.querySelector("#select").value;
                     var language = document.querySelector("#selectLang").value;
                     var input = document.getElementById("messageText");
+                    var progLng = document.querySelector("#selectProgLng").value
                     ws.send(JSON.stringify({
-                        type: '1',
+                        type: '2',
                         message: input.value, 
                         value: value, 
-                        language: language,
+                        language: language, 
+                        progLng: progLng,
                     }));
                     input.value = '';
                 } else {
@@ -322,7 +362,6 @@
             toggleButton.addEventListener('click', () => {
                 sidebar.classList.toggle('open');
             });
-
             let notEnter = false
             const {markedHighlight} = globalThis.markedHighlight;
             const {Marked} = globalThis.marked;
