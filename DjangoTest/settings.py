@@ -34,6 +34,7 @@ ALLOWED_HOSTS = [
     "dlai.gsu.by",
     "127.0.0.1",
     "localhost",
+    "10.1.2.201",
     ]
 
 
