@@ -26,7 +26,7 @@ class MyConsumer(AsyncWebsocketConsumer):
             await self.send(text_data="Context Cleared!")
             return
 
-
+        type = data['type']
         message = data['message']              #сообщение
         language = data['language']            #выбранный язык
         value = data["value"]                  #выбранная модель
@@ -39,6 +39,25 @@ class MyConsumer(AsyncWebsocketConsumer):
             if language == "English":
                 message += ". Communicate with me only in English"   #Общайся со мной только на английском языке
             self.old_language = language
+        
+        #обработка типов запросов
+        def getProgLng(lng):
+            if lng=='python':
+                return "Python"
+            elif lng=='cpp':
+                return "c++"
+            elif lng=='pascal':
+                return "Pascal"
+            else:
+                return ''
+
+        if type == "2":
+            progLng = getProgLng(data['progLng'])
+            message = f"У меня есть задача по программированию, решай ее на языке {progLng}\n {message}"
+        if type == "3":
+            progLng = getProgLng(data['progLng'])
+            code = data['code']
+            message = f"У меня есть задача по программированию, я написал для нее код на языке {progLng}, код не работает, найди пожалуйста ошибку. Задача: {message}. Код: {code}"
 
         await self.send(text_data=f"You: {message}")   #отправка сообщения пользователя
 
