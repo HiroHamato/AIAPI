@@ -36,7 +36,12 @@
         <style>
             /* Import a beautiful font from Google Fonts */
             @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
-
+            select {
+                text-align: center;
+            }
+            h3 {
+                margin:0;
+            }
             /* Apply the font and style to h1 and h2 */
             h1, h2 {
                 font-family: 'Roboto', sans-serif; /* Apply the font */
@@ -55,15 +60,15 @@
             }
 
             /* Style for the input field */
-            #messageText {
+            .messageText {
                 width: 100%; /* Increase the width */
                 font-size: 18px; /* Increase font size */
                 border: 2px solid #ccc; /* Add a border */
                 border-radius: 10px; /* Round the corners */
                 box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1); /* Add a subtle shadow */
                 resize: none;
-                height: 85vh;
-                margin-top: 2vh;
+                height: 35vh;
+                margin-top: 1vh;
             }
 
             /* Style for the button */
@@ -115,7 +120,7 @@
                 width: 30vw;
                 max-width: 94vw;
             }
-            #select, #selectType, #selectLang {
+            #select, #selectType, #selectLang, #selectProgLng, #selectTheme {
                 font-size: 18px;
                 max-width: 77%;
             }
@@ -141,12 +146,23 @@
                 font-size: 32px;
                 color: black;
             }
-            .check {
+            .check, .top-preprompt {
+                margin-top: 0.5vh;
                 font-family: 'Roboto';
                 font-weight: 600;
             }
-            .dv {
+            .dv, .top-dv {
                 display: flex;
+            }
+            .top-dv {
+                justify-content: space-between;
+                margin-top: 2vh;
+            }
+            .top-dv select {
+                width: 45%;
+            }
+            .top-preprompt {
+                font-size: 18px;
             }
 
         /* left menu */
@@ -220,7 +236,35 @@
             <div class="dv">
                 <div class="resize-button" onmousedown="startResize(event)">🠔</div>
                 <form action="" onsubmit="sendMessage(event)">
-                    <textarea type="text" id="messageText" placeholder="Задайте вопрос (желательно на английском во избежание ошибок)" autocomplete="off"></textarea>
+                    <div class="top-dv">
+                        <select id="selectProgLng"> 
+                            <option value="python">Python</option>
+                            <option value="cpp">C++</option>
+                            <option value="pascal">Pascal</option>
+                        </select>
+                        <select id="selectTheme"> 
+                            <option>Одномерный массив</option>
+                            <option>Двумерный массив</option>
+                            <option>Строки</option>
+                            <option>Сортировка</option>
+                            <option>Очередь</option>
+                        </select>
+                    </div>
+                    <div class="top-preprompt">
+                        Препромпт:
+                        <select id="selectTheme"> 
+                            <option>Одномерный массив</option>
+                            <option>Двумерный массив</option>
+                            <option>Строки</option>
+                            <option>Сортировка</option>
+                            <option>Очередь</option>
+                        </select>
+                        
+                    </div>
+                    <h3>Задача:</h3>
+                    <textarea type="text" id="taskText" class="messageText" placeholder="Вставьте сюда условие задачи" autocomplete="off"></textarea>
+                    <h3>Код программы:</h3>
+                    <textarea type="text" id="codeText" class="messageText" placeholder="Вставьте сюда ваш код решения задачи" autocomplete="off"></textarea>
                     <div>
                         <button>Send</button>
                         <button type="button" onclick="clearContext()">Clear Context</button>
@@ -236,9 +280,9 @@
                             <option value="Gemma_7b">Gemma-7b</option>
                         </select>
                         <select id="selectType"  onchange="document.location.href=this.querySelector('option:checked').dataset.link">
-                            <option selected>Чат с DLAI</option>
+                            <option data-link="/ai/chat/">Чат с DLAI</option>
                             <option data-link="/ai/decide-task/">Реши задачу</option>
-                            <option data-link="/ai/find-error/">В чём ошибка?</option>
+                            <option selected>В чём ошибка?</option>
                         </select>
                         <div class="check">
                             <input type="checkbox" class="inp" checked> При нажатии на Enter будет отправлятся вопрос(для переноса строки Enter+Shift)
@@ -247,7 +291,6 @@
                 </form>
             </div>
         </div>
-    
         <div class="sidebar">
             <div class="sidebar-header">
             Админ-Панель
@@ -260,7 +303,7 @@
                 <polyline points="9 18 15 12 9 6"/>
             </svg>
         </button>
-        
+
         <script src="https://cdn.jsdelivr.net/npm/marked/lib/marked.umd.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/marked-highlight/lib/index.umd.js"></script>
         <script>
@@ -279,7 +322,9 @@
                 content.innerHTML += markedd.parse(event.data)
                 messages.appendChild(content)
                 messages.scrollTo({top: messages.scrollHeight, behavior: 'smooth'});
-                var input = document.getElementById("messageText")
+                var input = document.getElementById("codeText")
+                input.value = ''
+                input = document.getElementById("taskText")
                 input.value = ''
                 notEnter = false
             };
@@ -289,14 +334,21 @@
                 if (ws.readyState === WebSocket.OPEN) {
                     var value = document.querySelector("#select").value;
                     var language = document.querySelector("#selectLang").value;
-                    var input = document.getElementById("messageText");
+                    var input = document.getElementById("taskText");
+                    var code = document.getElementById("codeText");
+                    var progLng = document.querySelector("#selectProgLng").value
                     ws.send(JSON.stringify({
-                        type: '1',
+                        type: '3',
                         message: input.value, 
                         value: value, 
                         language: language,
+                        progLng: progLng,
+                        code: code.value,
                     }));
-                    input.value = '';
+                    input = document.getElementById("codeText")
+                    input.value = ''
+                    input = document.getElementById("taskText")
+                    input.value = ''
                 } else {
                     console.log("WebSocket is not open: " + ws.readyState);
                 }
@@ -315,14 +367,12 @@
             // end websocket
 
 
-
             const toggleButton = document.querySelector('.toggle-button');
             const sidebar = document.querySelector('.sidebar');
 
             toggleButton.addEventListener('click', () => {
                 sidebar.classList.toggle('open');
             });
-
             let notEnter = false
             const {markedHighlight} = globalThis.markedHighlight;
             const {Marked} = globalThis.marked;
@@ -336,6 +386,8 @@
                     }
                 })
             );
+
+
 
             let isResizing = false;
 

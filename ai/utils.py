@@ -23,6 +23,11 @@ GROQ_TOKEN = os.getenv("GROQ_TOKEN")
 
 hist=dict([])
 
+proxies = {
+            'http': 'http://main%5Cdlupdate:3sd4y-K8yf3@proxy.gsu.by:800/',
+            'https': 'http://main%5Cdlupdate:3sd4y-K8yf3@proxy.gsu.by:800/'
+        }
+
 async def ask_Meta_Llama_3_1_70B_Instruct_async(messages: str, user_id: int) -> str:
     if user_id not in hist:
         hist[user_id] = []
@@ -34,7 +39,9 @@ async def ask_Meta_Llama_3_1_70B_Instruct_async(messages: str, user_id: int) -> 
             "max_tokens": 9000
         }, headers={
             'Authorization': f'Bearer {SC_TOKEN}',
-        })
+        },
+        proxies=proxies
+        )
 
         # Логирование статуса ответа и содержимого
         print(f"Response Status: {response.status_code}")
@@ -126,7 +133,8 @@ async def ask_Mixtral_8x22b_async(messages: str, user_id: int) -> str:
             "max_tokens": 9000
         }, headers={
             'Authorization': f'Bearer {MIST_TOKEN}',
-        })
+        }, proxies=proxies
+        )
         response_content = response.content.decode('utf-8')
         if not response_content:
             raise ValueError("Пустой ответ от сервера.")
@@ -153,7 +161,8 @@ async def ask_Gemma_7b_async(messages: str, user_id: int) -> str:
             "max_tokens": 8192
         }, headers={
             'Authorization': f'Bearer {GROQ_TOKEN}',
-        })
+        }, proxies=proxies
+        )
         response_content = response.content.decode('utf-8')
         if not response_content:
             raise ValueError("Пустой ответ от сервера.")
