@@ -89,8 +89,12 @@ ASGI_APPLICATION = 'DjangoTest.asgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'dl_ai',  
+        'USER': DB_USER,  
+        'PASSWORD': DB_PASSWORD, 
+        'HOST': 'localhost',   # хост базы данных, для локальной установки
+        'PORT': '5432', 
     }
 }
 
@@ -126,22 +130,12 @@ USE_I18N = True
 
 USE_TZ = True
 
-
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/5.1/howto/static-files/
-
-STATIC_URL = 'static/'
-
-# Default primary key field type
-# https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
-
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-STATIC_URL = '/static/'
+STATIC_URL = '/static'
 
-# Путь к директории для статики в продакшн
-STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
-# Добавь сюда директории с твоими статическими файлами (например, /static для разработки)
+# # Добавь сюда директории с твоими статическими файлами (например, /static для разработки)
 # STATICFILES_DIRS = [
-#     os.path.join(BASE_DIR, 'staticfiles'),
+#     os.path.join(BASE_DIR, '/static'),
 # ]
+STATIC_ROOT = "/static/"

@@ -10,6 +10,7 @@ class MyConsumer(AsyncWebsocketConsumer):
             hist[self.client_id] = []
         self.old_language = None
         await self.accept()
+        print("ХУУУУУУУУУУУУУУУУЙ")
 
     async def disconnect(self, close_code):
         if self.client_id in hist:
