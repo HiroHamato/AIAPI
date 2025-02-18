@@ -100,6 +100,7 @@ DATABASES = {
 }
 
 
+
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
 
@@ -130,13 +131,13 @@ USE_I18N = True
 
 USE_TZ = True
 
-
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/5.1/howto/static-files/
-
-STATIC_URL = 'static/'
-
-# Default primary key field type
-# https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
-
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+STATIC_URL = '/static'
+
+STATIC_URL = '/static/'
+
+# # Добавь сюда директории с твоими статическими файлами (например, /static для разработки)
+# STATICFILES_DIRS = [
+#     os.path.join(BASE_DIR, '/static'),
+# ]
+STATIC_ROOT = "D:/AIAPI/static/" #путь до файла со статикой. Предварительно надо запустить python manage.py runserver. 
