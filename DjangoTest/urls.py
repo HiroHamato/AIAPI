@@ -19,12 +19,14 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 
-
+from ai.views import get_languages
 from django.contrib import admin
 from django.urls import path, include
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('ai.urls')),
+    path('api/languages/', get_languages, name='get_languages'),
+
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 

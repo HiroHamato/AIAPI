@@ -1,39 +1,23 @@
 from django.db import models
 
-# Модель темы
-class Topic(models.Model):
-    topic_name = models.CharField(max_length=255)
-
-    def __str__(self):
-        return self.topic_name
-
-# Модель подтемы
-class Subtopic(models.Model):
-    subtopic_name = models.CharField(max_length=255)
-    topic = models.ForeignKey(Topic, on_delete=models.CASCADE)
-
-    def __str__(self):
-        return self.subtopic_name
-
-# Модель языка программирования
 class ProgrammingLanguage(models.Model):
-    language_name = models.CharField(max_length=255)
+    language_name = models.CharField(max_length=255,)
 
     def __str__(self):
         return self.language_name
+    
 
-# Модель предпочтений пользователя
-class UserPreference(models.Model):
-    topic = models.ForeignKey(Topic, on_delete=models.CASCADE)
-    subtopic = models.ForeignKey(Subtopic, on_delete=models.CASCADE)
-    language = models.ForeignKey(ProgrammingLanguage, on_delete=models.CASCADE)
+class Topic(models.Model):
+    topic_name = models.CharField(max_length=255)
+    programming_language = models.ForeignKey(ProgrammingLanguage, on_delete=models.CASCADE, null = True)  # Добавляем связь с языком программирования
 
-    class Meta:
-        unique_together = ('topic', 'subtopic', 'language')
+    def __str__(self):
+        return self.topic_name
+    
 
 # Модель препромпта
 class Prompt(models.Model):
-    user_preference = models.ForeignKey(UserPreference, on_delete=models.CASCADE)
+    user_preference = models.ForeignKey(Topic, on_delete=models.CASCADE, null = True)
     prompt_text = models.TextField()
 
     def __str__(self):

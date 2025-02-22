@@ -234,11 +234,24 @@
                 <div class="resize-button" onmousedown="startResize(event)">🠔</div>
                 <form action="" onsubmit="sendMessage(event)">
                     <div class="top-dv">
-                        <select id="selectProgLng"> 
-                            <option value="python">Python</option>
-                            <option value="cpp">C++</option>
-                            <option value="pascal">Pascal</option>
-                        </select>
+                        <select id="selectProgLng"></select>
+                        <script>
+                        document.addEventListener("DOMContentLoaded", function() {
+                            fetch("/api/languages/")
+                                .then(response => response.json())
+                                .then(data => {
+                                    let select = document.getElementById("selectProgLng");
+                                    select.innerHTML = "";
+                                    data.forEach(lang => {
+                                        let option = document.createElement("option");
+                                        option.value = lang.id;
+                                        option.textContent = lang.language_name;
+                                        select.appendChild(option);
+                                    });
+                                })
+                                .catch(error => console.error("Ошибка загрузки языков:", error));
+                        });
+                        </script>
                         <select id="selectTheme"> 
                             <option>Одномерный массив</option>
                             <option>Двумерный массив</option>
