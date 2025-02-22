@@ -261,8 +261,7 @@
             </svg>
         </button>
         
-        <script src="https://cdn.jsdelivr.net/npm/marked/lib/marked.umd.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/marked-highlight/lib/index.umd.js"></script>
+
         <script>
             // start of websocket
             var client_id = Date.now()
@@ -273,15 +272,18 @@
             var ws = new WebSocket(`ws://localhost:80/ai/chat/ws/${client_id}`);
 
             ws.onmessage = function(event) {
-                var messages = document.getElementById('messages')
-                var message = document.createElement('li')
-                var content = document.createElement('li')
-                content.innerHTML += markedd.parse(event.data)
-                messages.appendChild(content)
-                messages.scrollTo({top: messages.scrollHeight, behavior: 'smooth'});
-                var input = document.getElementById("messageText")
-                input.value = ''
-                notEnter = false
+                var messages = document.getElementById('messages');
+                var message = document.createElement('li');
+                
+                // Добавляем текст безопасно
+                message.innerText = event.data;
+                
+                messages.appendChild(message);
+                messages.scrollTo({ top: messages.scrollHeight, behavior: 'smooth' });
+
+                var input = document.getElementById("messageText");
+                input.value = '';
+                notEnter = false;
             };
 
             function sendMessage(event) {
@@ -324,18 +326,7 @@
             });
 
             let notEnter = false
-            const {markedHighlight} = globalThis.markedHighlight;
-            const {Marked} = globalThis.marked;
-            const markedd = new Marked(
-                markedHighlight({
-                    langPrefix: 'hljs language-',
-                    highlight(code, lang, info)
-                    {
-                        const language = hljs.getLanguage(lang) ? lang : 'plaintext';
-                        return hljs.highlight(code, { language }).value;
-                    }
-                })
-            );
+
 
             let isResizing = false;
 
