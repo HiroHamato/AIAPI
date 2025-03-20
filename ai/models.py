@@ -17,8 +17,9 @@ class Topic(models.Model):
 
 # Модель препромпта
 class Prompt(models.Model):
-    user_preference = models.ForeignKey(Topic, on_delete=models.CASCADE, null = True)
+    topic = models.ForeignKey(Topic, on_delete=models.CASCADE, null = True)
     prompt_text = models.TextField()
 
     def __str__(self):
         return self.prompt_text
+    
