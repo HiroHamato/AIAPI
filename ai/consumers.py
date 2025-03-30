@@ -70,6 +70,12 @@ class MyConsumer(AsyncWebsocketConsumer):
             response = await ask_Mixtral_8x22b_async(message, self.client_id)
         elif value == "Gemma_7b":
             response = await ask_Gemma_7b_async(message, self.client_id)
+        elif value == "DeepSeek_R1_Distill_Llama_70B":
+            response = await ask_DeepSeek_R1_Distill_Llama_70B_async(message, self.client_id)
+        elif value == "Llama_3_1_Tulu_3_405B":
+            response = await ask_Llama_3_1_Tulu_3_405B_async(message, self.client_id)
+        elif value == "DeepSeek_R1":
+            response = await ask_DeepSeek_R1_async(message, self.client_id)
 
 
         await self.send(text_data= f"Assistant: {response}")  #отправка ответа от ИИ
@@ -80,3 +86,4 @@ class MyConsumer(AsyncWebsocketConsumer):
 #       elif value == "Mistral_7B_Instruct":
 #       elif value == "Mistral_Nemo_Instruct":
 #       elif value == "Mixtral_8x22b":
+

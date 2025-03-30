@@ -23,6 +23,123 @@ GROQ_TOKEN = os.getenv("GROQ_TOKEN")
 
 hist=dict([])
 
+proxies = {
+            'http': os.getenv("PROXY"),
+            'https': os.getenv("PROXY")
+        }
+
+
+async def ask_DeepSeek_R1_async(messages: str, user_id: int) -> str:
+    if user_id not in hist:
+        hist[user_id] = []
+    hist[user_id].append({"role": "user", "content": messages})
+    try:
+        response = await asyncio.to_thread(requests.post, 'https://api.sambanova.ai/v1/chat/completions', json={
+            "model": "DeepSeek-R1",
+            "messages": hist[user_id],
+            "max_tokens": 9000
+        }, headers={
+            'Authorization': f'Bearer {SC_TOKEN}',
+        },
+        proxies=proxies
+        )
+
+        # Логирование статуса ответа и содержимого
+        print(f"Response Status: {response.status_code}")
+        print(f"Response Content: {response.text}")
+
+        response_content = response.content.decode('utf-8')
+        if not response_content:
+            raise ValueError("Пустой ответ от сервера.")
+
+        try:
+            obj = json.loads(response_content)
+        except json.JSONDecodeError as e:
+            print(f"Ошибка при декодировании JSON: {e}")
+            print(f"Содержимое ответа: {response_content}")
+            return 'Что-то пошло не так с обработкой JSON.'
+
+        hist[user_id].append({"role": "assistant", "content": obj['choices'][0]['message']['content']})
+        return obj['choices'][0]['message']['content']
+    except Exception as e:
+        print(f"Общая ошибка: {e}")
+        hist[user_id]=[]
+        return 'Что-то пошло не так. Контекст очищен, введите новый запрос.'
+
+async def ask_DeepSeek_R1_Distill_Llama_70B_async(messages: str, user_id: int) -> str:
+    if user_id not in hist:
+        hist[user_id] = []
+    hist[user_id].append({"role": "user", "content": messages})
+    try:
+        response = await asyncio.to_thread(requests.post, 'https://api.sambanova.ai/v1/chat/completions', json={
+            "model": "DeepSeek-R1-Distill-Llama-70B",
+            "messages": hist[user_id],
+            "max_tokens": 9000
+        }, headers={
+            'Authorization': f'Bearer {SC_TOKEN}',
+        },
+        proxies=proxies
+        )
+
+        # Логирование статуса ответа и содержимого
+        print(f"Response Status: {response.status_code}")
+        print(f"Response Content: {response.text}")
+
+        response_content = response.content.decode('utf-8')
+        if not response_content:
+            raise ValueError("Пустой ответ от сервера.")
+
+        try:
+            obj = json.loads(response_content)
+        except json.JSONDecodeError as e:
+            print(f"Ошибка при декодировании JSON: {e}")
+            print(f"Содержимое ответа: {response_content}")
+            return 'Что-то пошло не так с обработкой JSON.'
+
+        hist[user_id].append({"role": "assistant", "content": obj['choices'][0]['message']['content']})
+        return obj['choices'][0]['message']['content']
+    except Exception as e:
+        print(f"Общая ошибка: {e}")
+        hist[user_id]=[]
+        return 'Что-то пошло не так. Контекст очищен, введите новый запрос.'
+
+async def ask_Llama_3_1_Tulu_3_405B_async(messages: str, user_id: int) -> str:
+    if user_id not in hist:
+        hist[user_id] = []
+    hist[user_id].append({"role": "user", "content": messages})
+    try:
+        response = await asyncio.to_thread(requests.post, 'https://api.sambanova.ai/v1/chat/completions', json={
+            "model": "Llama-3.1-Tulu-3-405B",
+            "messages": hist[user_id],
+            "max_tokens": 9000
+        }, headers={
+            'Authorization': f'Bearer {SC_TOKEN}',
+        },
+        proxies=proxies
+        )
+
+        # Логирование статуса ответа и содержимого
+        print(f"Response Status: {response.status_code}")
+        print(f"Response Content: {response.text}")
+
+        response_content = response.content.decode('utf-8')
+        if not response_content:
+            raise ValueError("Пустой ответ от сервера.")
+
+        try:
+            obj = json.loads(response_content)
+        except json.JSONDecodeError as e:
+            print(f"Ошибка при декодировании JSON: {e}")
+            print(f"Содержимое ответа: {response_content}")
+            return 'Что-то пошло не так с обработкой JSON.'
+
+        hist[user_id].append({"role": "assistant", "content": obj['choices'][0]['message']['content']})
+        return obj['choices'][0]['message']['content']
+    except Exception as e:
+        print(f"Общая ошибка: {e}")
+        return 'Что-то пошло не так.'
+
+
 async def ask_Meta_Llama_3_1_70B_Instruct_async(messages: str, user_id: int) -> str:
     if user_id not in hist:
         hist[user_id] = []
@@ -34,12 +151,13 @@ async def ask_Meta_Llama_3_1_70B_Instruct_async(messages: str, user_id: int) -> 
             "max_tokens": 9000
         }, headers={
             'Authorization': f'Bearer {SC_TOKEN}',
-        })
+        },
+        proxies=proxies
+        )
 
         # Логирование статуса ответа и содержимого
         print(f"Response Status: {response.status_code}")
         print(f"Response Content: {response.text}")
-
         response_content = response.content.decode('utf-8')
         if not response_content:
             raise ValueError("Пустой ответ от сервера.")
@@ -126,7 +244,8 @@ async def ask_Mixtral_8x22b_async(messages: str, user_id: int) -> str:
             "max_tokens": 9000
         }, headers={
             'Authorization': f'Bearer {MIST_TOKEN}',
-        })
+        }, proxies=proxies
+        )
         response_content = response.content.decode('utf-8')
         if not response_content:
             raise ValueError("Пустой ответ от сервера.")
@@ -153,7 +272,8 @@ async def ask_Gemma_7b_async(messages: str, user_id: int) -> str:
             "max_tokens": 8192
         }, headers={
             'Authorization': f'Bearer {GROQ_TOKEN}',
-        })
+        }, proxies=proxies
+        )
         response_content = response.content.decode('utf-8')
         if not response_content:
             raise ValueError("Пустой ответ от сервера.")
@@ -167,7 +287,6 @@ async def ask_Gemma_7b_async(messages: str, user_id: int) -> str:
     except Exception as e:
         print(f"Общая ошибка: {e}")
         return 'Что-то пошло не так.'
-
 
 async def send_prompt_async(msg: str, access_token: str) -> str:
     url = "https://gigachat.devices.sberbank.ru/api/v1/chat/completions"
