@@ -140,4 +140,4 @@ STATIC_URL = '/static/'
 # STATICFILES_DIRS = [
 #     os.path.join(BASE_DIR, '/static'),
 # ]
-STATIC_ROOT = "D:/AIAPI/static/" #путь до файла со статикой. Предварительно надо запустить python manage.py runserver. 
+STATIC_ROOT = "/app/static/" #путь до файла со статикой. Предварительно надо запустить python manage.py runserver. 
