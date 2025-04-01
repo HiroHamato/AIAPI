@@ -30,6 +30,7 @@ def get_prompts(request):
         'id', 
         'topic_id',  # ID Topic
         'topic__programming_language',  # ID ProgrammingLanguage
-        'prompt_text'
+        'prompt_text', 
+        'prompt_name',
     ))
     return JsonResponse(prompts, safe=False)

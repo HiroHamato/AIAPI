@@ -19,7 +19,7 @@ class Topic(models.Model):
 class Prompt(models.Model):
     topic = models.ForeignKey(Topic, on_delete=models.CASCADE, null = True)
     prompt_text = models.TextField()
-
+    prompt_name = models.CharField(max_length=255, null = True)
     def __str__(self):
         return self.prompt_text
     

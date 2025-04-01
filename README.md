@@ -1,1 +1,1 @@
-daphne -p 8000 DjangoTest.asgi:application
+daphne -p 80 DjangoTest.asgi:application
