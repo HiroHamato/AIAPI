@@ -1,10 +1,29 @@
+import requests
 import json
 from channels.generic.websocket import AsyncWebsocketConsumer
 #from chat.database import insert_into_bd,start_bd
 from .utils import *
+ADRESS = os.getenv("ADRESS")
+
+
+
+
 
 class MyConsumer(AsyncWebsocketConsumer):
     async def connect(self):
+
+        def fetch(url):
+            response = requests.get(url)
+            if response.status_code == 200:
+                return response.json()
+            else:
+                return None
+                
+        languages = fetch(f"{ADRESS}/api/languages/")
+        topics = fetch(f"{ADRESS}/api/topics/")
+        prompts = fetch(f"{ADRESS}/api/prompts/")
+
+
         self.client_id = self.scope['url_route']['kwargs']['client_id']
         if self.client_id not in hist:
             hist[self.client_id] = []
