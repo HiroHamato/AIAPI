@@ -495,7 +495,7 @@
             promptSelect.innerHTML = '<option value="">Выберите подсказку</option>';
             const filteredPrompts = prompts.filter(prompt => prompt.topic_id === topicId);
             filteredPrompts.forEach(prompt => {
-                const option = new Option(prompt.name, prompt.id);
+                const option = new Option(prompt.prompt_name, prompt.id);
                 promptSelect.appendChild(option);
             });
         }
