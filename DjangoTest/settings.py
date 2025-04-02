@@ -94,7 +94,7 @@ DATABASES = {
         'NAME': 'dl_ai',  
         'USER': DB_USER,  
         'PASSWORD': DB_PASSWORD, 
-        'HOST': 'localhost',   # хост базы данных, для локальной установки
+        'HOST': os.getenv('ADRESS'),   # хост базы данных, для локальной установки
         'PORT': '5432', 
     }
 }
