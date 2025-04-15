@@ -23,6 +23,7 @@ class MyConsumer(AsyncWebsocketConsumer):
         topics = json.loads(fetch(f"http://{ADRESS}/api/topics/"))
         prompts = json.loads(fetch(f"http://{ADRESS}/api/prompts/"))
 
+
         self.client_id = self.scope['url_route']['kwargs']['client_id']
         if self.client_id not in hist:
             hist[self.client_id] = []
@@ -60,11 +61,15 @@ class MyConsumer(AsyncWebsocketConsumer):
             self.old_language = language
         
         #обработка типов запросов
-        def getProgLng(language_id):
-            for language in languages:
-                if language['id'] == language_id:
-                    return language['language_name']
-            return None 
+        def getProgLng(lng):
+            if lng=='python':
+                return "Python"
+            elif lng=='cpp':
+                return "c++"
+            elif lng=='pascal':
+                return "Pascal"
+            else:
+                return ''
 
         if type == "2":
             progLng = getProgLng(data['progLng'])
