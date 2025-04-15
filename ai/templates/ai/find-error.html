@@ -264,29 +264,16 @@
             </ul>
             <div class="dv">
                 <div class="resize-button" onmousedown="startResize(event)">🠔 </div>
-                <form action="" onsubmit="sendMessage(event)">
+                <form action="" onsubmit="sendMessage(event)">                    
                     <div class="top-dv">
                         <select id="selectProgLng">
-                            <option value="python">Python</option>
-                            <option value="cpp">C++</option>
-                            <option value="pascal">Pascal</option>
                         </select>
                         <select id="selectTheme">
-                            <option>Одномерный массив</option>
-                            <option>Двумерный массив</option>
-                            <option>Строки</option>
-                            <option>Сортировка</option>
-                            <option>Очередь</option>
                         </select>
                     </div>
                     <div class="top-preprompt">
                         Препромпт:
-                        <select id="selectTheme">
-                            <option>Одномерный массив</option>
-                            <option>Двумерный массив</option>
-                            <option>Строки</option>
-                            <option>Сортировка</option>
-                            <option>Очередь</option>
+                        <select id="selectPrompt">
                         </select>
 
                     </div>
@@ -474,3 +461,67 @@
 </body>
 
 </html>
+
+<script>
+    document.addEventListener("DOMContentLoaded", async () => {
+        const languageSelect = document.getElementById("selectProgLng");
+        const topicSelect = document.getElementById("selectTheme");
+        const promptSelect = document.getElementById("selectPrompt");
+
+        async function fetchData(url) {
+            const response = await fetch(url);
+            const res = response.json()
+            console.log(res);
+            return res;
+        }
+
+        async function loadLanguages() {
+            const languages = await fetchData("/api/languages");
+            languageSelect.innerHTML = '<option value="">Выберите язык</option>';
+            languages.forEach(lang => {
+                const option = new Option(lang.language_name, lang.id);
+                languageSelect.appendChild(option);
+            });
+        }
+
+        async function loadTopics(languageId) {
+            const topics = await fetchData("/api/topics");
+            topicSelect.innerHTML = '<option value="">Выберите тему</option>';
+            const filteredTopics = topics.filter(topic => topic.programming_language === languageId);
+            filteredTopics.forEach(topic => {
+                const option = new Option(topic.topic_name, topic.id);
+                topicSelect.appendChild(option);
+            });
+        }
+
+        async function loadPrompts(topicId) {
+            const prompts = await fetchData("/api/prompts");
+            promptSelect.innerHTML = '<option value="">Выберите подсказку</option>';
+            const filteredPrompts = prompts.filter(prompt => prompt.topic_id === topicId);
+            filteredPrompts.forEach(prompt => {
+                const option = new Option(prompt.prompt_name, prompt.id);
+                promptSelect.appendChild(option);
+            });
+        }
+
+        languageSelect.addEventListener("change", async () => {
+            const languageId = parseInt(languageSelect.value);
+            topicSelect.innerHTML = '';
+            promptSelect.innerHTML = '';
+            if (!isNaN(languageId)) {
+                await loadTopics(languageId);
+            }
+        });
+
+        topicSelect.addEventListener("change", async () => {
+            const topicId = parseInt(topicSelect.value);
+            promptSelect.innerHTML = '';
+            if (!isNaN(topicId)) {
+                await loadPrompts(topicId);
+            }
+        });
+
+        await loadLanguages();
+    });
+
+</script>

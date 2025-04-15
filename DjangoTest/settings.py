@@ -94,7 +94,7 @@ DATABASES = {
         'NAME': 'dl_ai',  
         'USER': DB_USER,  
         'PASSWORD': DB_PASSWORD, 
-        'HOST': 'localhost',   # хост базы данных, для локальной установки
+        'HOST': '10.1.2.201',   # хост базы данных, для локальной установки
         'PORT': '5432', 
     }
 }
@@ -136,8 +136,8 @@ STATIC_URL = '/static'
 
 STATIC_URL = '/static/'
 
-# # Добавь сюда директории с твоими статическими файлами (например, /static для разработки)
+
 # STATICFILES_DIRS = [
 #     os.path.join(BASE_DIR, '/static'),
 # ]
-STATIC_ROOT = "D:\AIAPITEST\AIAPI\static" #путь до файла со статикой. Предварительно надо запустить python manage.py runserver. 
+STATIC_ROOT = "/app/static/" 
