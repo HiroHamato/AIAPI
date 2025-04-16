@@ -351,6 +351,17 @@
             var wsUrl = `${wsProtocol}//${window.location.hostname}:8000/ai/chat/ws/${client_id}`;
             var ws = new WebSocket(wsUrl);
 
+            const { markedHighlight } = globalThis.markedHighlight;
+            const { Marked } = globalThis.marked;
+            const markedd = new Marked(
+                markedHighlight({
+                    langPrefix: 'hljs language-',
+                    highlight(code, lang, info) {
+                        const language = hljs.getLanguage(lang) ? lang : 'plaintext';
+                        return hljs.highlight(code, { language }).value;
+                    }
+                })
+            );
             ws.onmessage = function (event) {
                 var messages = document.getElementById('messages')
                 var message = document.createElement('li')
@@ -366,7 +377,7 @@
                 if (parseThinkTag(event.data).thinkContent) {
                     message.appendChild(inThinkTag);
                 }
-                message.appendChild(mainMess);
+                message.appendChild(markedd.parse(mainMess));
 
                 messages.appendChild(message);
                 messages.scrollTo({ top: messages.scrollHeight, behavior: 'smooth' });
@@ -374,6 +385,7 @@
                 input.value = ''
                 notEnter = false
             };
+
             function sendMessage(event) {
                 event.preventDefault();
                 if (ws.readyState === WebSocket.OPEN) {

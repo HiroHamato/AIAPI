@@ -3,9 +3,13 @@
 <html lang="en">
 
 <head>
+
+
     <link rel="stylesheet" href="{% static 'highlightjs/styles/default.min.css' %}">
     <script src="{% static 'highlightjs/highlight.min.js' %}"></script>
     <script>hljs.highlightAll();</script>
+    <script src="{% static 'highlightjs/highlight.min.js' %}"></script>
+
     <meta charset="UTF-8">
     <meta name="viewport"
         content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
@@ -317,6 +321,17 @@
             var wsUrl = `${wsProtocol}//${window.location.hostname}:8000/ai/chat/ws/${client_id}`;
             var ws = new WebSocket(wsUrl);
 
+            const { markedHighlight } = globalThis.markedHighlight;
+            const { Marked } = globalThis.marked;
+            const markedd = marked.parse;(
+                markedHighlight({
+                    langPrefix: 'hljs language-',
+                    highlight(code, lang, info) {
+                        const language = hljs.getLanguage(lang) ? lang : 'plaintext';
+                        return hljs.highlight(code, { language }).value;
+                    }
+                })
+            );
             ws.onmessage = function (event) {
                 var messages = document.getElementById('messages')
                 var message = document.createElement('li')
@@ -332,7 +347,7 @@
                 if (parseThinkTag(event.data).thinkContent) {
                     message.appendChild(inThinkTag);
                 }
-                message.appendChild(mainMess);
+                message.appendChild(markedd.parse(mainMess));
 
                 messages.appendChild(message);
                 messages.scrollTo({ top: messages.scrollHeight, behavior: 'smooth' });
