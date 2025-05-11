@@ -5,31 +5,19 @@ from channels.generic.websocket import AsyncWebsocketConsumer
 from .utils import *
 ADRESS = os.getenv("ADRESS")
 
-
-
-
+proxies = {
+            'http': os.getenv("PROXY"),
+            'https': os.getenv("PROXY")
+        }
 
 class MyConsumer(AsyncWebsocketConsumer):
     async def connect(self):
-
-        def fetch(url):
-            response = requests.get(url)
-            if response.status_code == 200:
-                return response.json()
-            else:
-                return None
-                
-        languages = json.loads(fetch(f"http://{ADRESS}/api/languages/"))
-        topics = json.loads(fetch(f"http://{ADRESS}/api/topics/"))
-        prompts = json.loads(fetch(f"http://{ADRESS}/api/prompts/"))
-
-
         self.client_id = self.scope['url_route']['kwargs']['client_id']
         if self.client_id not in hist:
             hist[self.client_id] = []
         self.old_language = None
         await self.accept()
-       
+
 
     async def disconnect(self, close_code):
         if self.client_id in hist:
@@ -59,17 +47,23 @@ class MyConsumer(AsyncWebsocketConsumer):
             if language == "English":
                 message += ". Communicate with me only in English"   #Общайся со мной только на английском языке
             self.old_language = language
-        
+
         #обработка типов запросов
-        def getProgLng(lng):
-            if lng=='python':
-                return "Python"
-            elif lng=='cpp':
-                return "c++"
-            elif lng=='pascal':
-                return "Pascal"
-            else:
-                return ''
+        def getProgLng(language_id):
+            def fetch(url):
+                response = requests.get(url, proxies=proxies)
+                print(response)
+                if response.status_code == 200:
+                    return response.json()
+                else:
+                    return None
+            languages = fetch(f"http://{ADRESS}/api/languages/")
+            topics = fetch(f"http://{ADRESS}/api/topics/")
+            prompts = fetch(f"http://{ADRESS}/api/prompts/")
+            for language in languages:
+                if language['id'] == language_id:
+                    return language['language_name']
+            return None
 
         if type == "2":
             progLng = getProgLng(data['progLng'])
@@ -105,4 +99,5 @@ class MyConsumer(AsyncWebsocketConsumer):
 #       elif value == "Mistral_7B_Instruct":
 #       elif value == "Mistral_Nemo_Instruct":
 #       elif value == "Mixtral_8x22b":
+
 
