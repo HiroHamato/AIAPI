@@ -1,17 +1,7 @@
-{% load static %}
 <!doctype html>
 <html lang="en">
 
 <head>
-
-
-    <link rel="stylesheet" href="{% static 'highlightjs/styles/default.min.css' %}">
-    <script src="{% static 'highlightjs/highlight.min.js' %}"></script>
-    <script>hljs.highlightAll();</script>
-    <script src="{% static 'highlightjs/highlight.min.js' %}"></script>
-    <script src="{% static 'marked.min.js' %}"></script>
-    <script src="{% static 'index.umd.js' %}"></script>
-    
     <meta charset="UTF-8">
     <meta name="viewport"
         content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
@@ -298,64 +288,106 @@
             function parseThinkTag(inputText) {
                 const thinkStartTag = '<think>';
                 const thinkEndTag = '</think>';
-
                 const startIdx = inputText.indexOf(thinkStartTag);
                 const endIdx = inputText.indexOf(thinkEndTag);
-
                 if (startIdx === -1 || endIdx === -1) {
                     return {
                         thinkContent: '',
                         remainingText: inputText
+                            .replace(/</g, '&lt;')
+                            .replace(/>/g, '&gt;')
+                            .trim()
                     };
                 }
-
-                const thinkContent = inputText.substring(startIdx + thinkStartTag.length, endIdx);
-                const remainingText = inputText.substring(0, startIdx) + inputText.substring(endIdx + thinkEndTag.length);
+                const thinkContent = inputText.substring(
+                    startIdx + thinkStartTag.length,
+                    endIdx
+                );
+                let remainingText =
+                    inputText.substring(0, startIdx) +
+                    inputText.substring(endIdx + thinkEndTag.length);
+                remainingText = remainingText
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;')
+                    .trim();
 
                 return {
                     thinkContent: thinkContent.trim(),
-                    remainingText: remainingText.trim()
+                    remainingText: remainingText
                 };
             }
+
+            function convertMarkdownToHTML(markdown) {
+                markdown = markdown.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+                let codeBlocks = [];
+                markdown = markdown.replace(/```([^\`]*)```/g, (match, code) => {
+                    const codeId = `%%CODEBLOCK${codeBlocks.length}%%`;
+                    codeBlocks.push(code);
+                    return codeId;
+                });
+                let inlineCodeBlocks = [];
+                markdown = markdown.replace(/`([^`]+)`/g, (match, code) => {
+                    const codeId = `%%INLINECODE${inlineCodeBlocks.length}%%`;
+                    inlineCodeBlocks.push(code);
+                    return codeId;
+                });
+                markdown = markdown.replace(/^(#{1,6})\s*(.+)$/gm, (match, hashes, content) => {
+                    const level = hashes.length;
+                    return `<h${level}>${content}</h${level}>`;
+                });
+                markdown = markdown.replace(/\*\*([^\*]+)\*\*/g, '<strong>$1</strong>');
+                markdown = markdown.replace(/\_\_([^\_]+)\_\_/g, '<strong>$1</strong>');
+                markdown = markdown.replace(/\*([^\*]+)\*/g, '<em>$1</em>');
+                markdown = markdown.replace(/\_([^\_]+)\_/g, '<em>$1</em>');
+                markdown = markdown.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2">$1</a>');
+                markdown = markdown.replace(/^\s*\*\s*(.+)$/gm, '<ul><li>$1</li></ul>');
+                markdown = markdown.replace(/^\s*\d+\.\s*(.+)$/gm, '<ol><li>$1</li></ol>');
+                markdown = markdown.replace(/!\[([^\]]+)\]\(([^)]+)\)/g, '<img src="$2" alt="$1" />');
+                markdown = markdown.replace(/\n/g, '<br />');
+                markdown = markdown.replace(/%%CODEBLOCK(\d+)%%/g, (match, index) => {
+                    return `<pre><code>${codeBlocks[index]}</code></pre>`;
+                });
+                markdown = markdown.replace(/%%INLINECODE(\d+)%%/g, (match, index) => {
+                    return `<code>${inlineCodeBlocks[index]}</code>`;
+                });
+                return markdown;
+            }
+
+
             var client_id = Date.now()
 
             var wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
             var wsUrl = `${wsProtocol}//${window.location.hostname}:8000/ai/chat/ws/${client_id}`;
             var ws = new WebSocket(wsUrl);
 
-            const { markedHighlight } = globalThis.markedHighlight;
-            const { Marked } = globalThis.marked;
-            const markedd = marked.parse;(
-                markedHighlight({
-                    langPrefix: 'hljs language-',
-                    highlight(code, lang, info) {
-                        const language = hljs.getLanguage(lang) ? lang : 'plaintext';
-                        return hljs.highlight(code, { language }).value;
-                    }
-                })
-            );
-            ws.onmessage = function (event) {
-                var messages = document.getElementById('messages')
-                var message = document.createElement('li')
 
+
+            ws.onmessage = function (event) {
+                var messages = document.getElementById('messages');
+                var message = document.createElement('li');
                 var inThinkTag = document.createElement('div');
+                console.log(event.data);
                 inThinkTag.classList.add('think');
                 inThinkTag.innerHTML = parseThinkTag(event.data).thinkContent;
-
                 var mainMess = document.createElement('div');
-                mainMess.innerText += parseThinkTag(event.data).remainingText;
-                console.log(mainMess)
-                console.log(inThinkTag)
+                mainMess.innerHTML = parseThinkTag(event.data).remainingText;
+                console.log(mainMess);
+                console.log(inThinkTag);
                 if (parseThinkTag(event.data).thinkContent) {
                     message.appendChild(inThinkTag);
                 }
-                message.appendChild(markedd.parse(mainMess));
-
+                const mainMessText = mainMess.innerText || "";
+                console.log(mainMessText);
+                const parsedHTML = convertMarkdownToHTML(mainMessText);
+                const messageContent = document.createElement('div');
+                messageContent.innerHTML = parsedHTML;
+                message.appendChild(messageContent);
                 messages.appendChild(message);
                 messages.scrollTo({ top: messages.scrollHeight, behavior: 'smooth' });
-                var input = document.getElementById("messageText")
-                input.value = ''
-                notEnter = false
+                var input = document.getElementById("messageText");
+                input.value = '';
+                notEnter = false;
             };
 
             function sendMessage(event) {
