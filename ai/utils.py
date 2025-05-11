@@ -109,7 +109,7 @@ async def ask_Llama_3_1_Tulu_3_405B_async(messages: str, user_id: int) -> str:
     hist[user_id].append({"role": "user", "content": messages})
     try:
         response = await asyncio.to_thread(requests.post, 'https://api.sambanova.ai/v1/chat/completions', json={
-            "model": "Llama-3.1-Tulu-3-405B",
+            "model": "Meta-Llama-3.1-405B-Instruct",
             "messages": hist[user_id],
             "max_tokens": 9000
         }, headers={
@@ -146,7 +146,7 @@ async def ask_Meta_Llama_3_1_70B_Instruct_async(messages: str, user_id: int) -> 
     hist[user_id].append({"role": "user", "content": messages})
     try:
         response = await asyncio.to_thread(requests.post, 'https://api.sambanova.ai/v1/chat/completions', json={
-            "model": "Meta-Llama-3.1-70B-Instruct",
+            "model": "Meta-Llama-3.3-70B-Instruct",
             "messages": hist[user_id],
             "max_tokens": 9000
         }, headers={
