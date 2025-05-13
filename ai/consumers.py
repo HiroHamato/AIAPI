@@ -2,7 +2,24 @@ import requests
 import json
 from channels.generic.websocket import AsyncWebsocketConsumer
 #from chat.database import insert_into_bd,start_bd
+import django
+import os
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'DjangoTest.settings')
+django.setup()
+from .models import ProgrammingLanguage
 from .utils import *
+from asgiref.sync import sync_to_async
+
+@sync_to_async
+def getProgLng(language_id):
+    try:
+        return ProgrammingLanguage.objects.get(id=language_id).language_name
+    except ProgrammingLanguage.DoesNotExist:
+        return None
+    except Exception as e:
+        print(f"Database error: {str(e)}")
+    return None
+
 ADRESS = os.getenv("ADRESS")
 
 proxies = {
@@ -48,28 +65,11 @@ class MyConsumer(AsyncWebsocketConsumer):
                 message += ". Communicate with me only in English"   #Общайся со мной только на английском языке
             self.old_language = language
 
-        #обработка типов запросов
-        def getProgLng(language_id):
-            def fetch(url):
-                response = requests.get(url, proxies=proxies)
-                print(response)
-                if response.status_code == 200:
-                    return response.json()
-                else:
-                    return None
-            languages = fetch(f"http://{ADRESS}/api/languages/")
-            topics = fetch(f"http://{ADRESS}/api/topics/")
-            prompts = fetch(f"http://{ADRESS}/api/prompts/")
-            for language in languages:
-                if language['id'] == language_id:
-                    return language['language_name']
-            return None
-
         if type == "2":
-            progLng = getProgLng(data['progLng'])
+            progLng = await getProgLng(data['progLng'])
             message = f"У меня есть задача по программированию, решай ее на языке {progLng}\n {message}"
         if type == "3":
-            progLng = getProgLng(data['progLng'])
+            progLng = await getProgLng(data['progLng'])
             code = data['code']
             message = f"У меня есть задача по программированию, я написал для нее код на языке {progLng}, код не работает, найди пожалуйста ошибку. Задача: {message}. Код: {code}"
 
