@@ -236,7 +236,7 @@
                 <div class="resize-button" onmousedown="startResize(event)">🠔 </div>
                 <form action="" onsubmit="sendMessage(event)">
                     <textarea type="text" id="messageText"
-                        placeholder="Задайте вопрос (желательно на английском во избежание ошибок)"
+                        placeholder="Задайте вопрос (желательно на английском во избежание ошибок), для красивого форматирования оберните код в ```(буква Ё на клавиатуре)"
                         autocomplete="off"></textarea>
                     <div>
                         <button>Send</button>
@@ -271,9 +271,9 @@
         </div>
 
         <div class="sidebar">
-            <div class="sidebar-header">
+            <a href="/admin"><div class="sidebar-header">
                 Админ-Панель
-            </div>
+            </div></a>
             <div class="sidebar-content">
             </div>
         </div>
@@ -398,7 +398,7 @@
                     var input = document.getElementById("messageText");
                     ws.send(JSON.stringify({
                         type: '1',
-                        message: input.value,
+                        message: '<user>' + input.value + '</user>',
                         value: value,
                         language: language,
                     }));
