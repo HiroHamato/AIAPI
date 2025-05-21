@@ -273,7 +273,7 @@
         <div class="sidebar">
             <a href="/admin" style="text-decoration: none; color: black;">
                 <div class="sidebar-header">
-                Админ-Панель
+                    Админ-Панель
                 </div>
             </a>
             <div class="sidebar-content">
@@ -400,7 +400,7 @@
                     var input = document.getElementById("messageText");
                     ws.send(JSON.stringify({
                         type: '1',
-                        message: '<user>' + input.value + '</user>',
+                        message: input.value,
                         value: value,
                         language: language,
                     }));
@@ -460,6 +460,54 @@
                     sendMessage(event);
                 }
             });
+            const localization = {
+                Russian: {
+                    send: "Отправить",
+                    clear: "Очистить контекст",
+                    placeholder: "Задайте вопрос (желательно на английском во избежание ошибок), для красивого форматирования оберните код в ```(буква Ё на клавиатуре)",
+                    adminPanel: "Админ-Панель",
+                    chat: "Чат с DLAI",
+                    decideTask: "Реши задачу",
+                    findError: "В чём ошибка?",
+                    enterHint: "При нажатии на Enter будет отправляться вопрос (для переноса строки Enter+Shift)\nПример форматирования кода:\n```\nprint('Hello, world!')\n```"
+                },
+                English: {
+                    send: "Send",
+                    clear: "Clear Context",
+                    placeholder: "Ask a question (preferably in English to avoid errors), for nice formatting wrap the code in ```",
+                    adminPanel: "Admin Panel",
+                    chat: "Chat with DLAI",
+                    decideTask: "Solve the task",
+                    findError: "What’s the error?",
+                    enterHint: "Press Enter to send the question (Shift+Enter for a new line)\nExample of code formatting:\n```\nprint('Hello, world!')\n```"
+                },
+                French: {
+                    send: "Envoyer",
+                    clear: "Effacer le contexte",
+                    placeholder: "Posez une question (de préférence en anglais pour éviter les erreurs), pour un bon formatage, encadrez le code dans ```",
+                    adminPanel: "Panneau Admin",
+                    chat: "Chat avec DLAI",
+                    decideTask: "Résoudre la tâche",
+                    findError: "Quelle est l'erreur?",
+                    enterHint: "Appuyez sur Entrée pour envoyer la question (Shift+Enter pour une nouvelle ligne)\nExemple de formatage du code:\n```\nprint('Hello, world!')\n```"
+                }
+            };
+
+
+            document.getElementById("selectLang").addEventListener("change", function () {
+                const selectedLang = this.options[this.selectedIndex].getAttribute("language");
+                document.querySelector("button[type='submit']").textContent = localization[selectedLang].send;
+                document.querySelector("button[type='button']").textContent = localization[selectedLang].clear;
+                document.getElementById("messageText").setAttribute("placeholder", localization[selectedLang].placeholder);
+                document.querySelector(".sidebar-header").textContent = localization[selectedLang].adminPanel;
+                document.querySelector("#selectType option:nth-child(1)").textContent = localization[selectedLang].chat;
+                document.querySelector("#selectType option:nth-child(2)").textContent = localization[selectedLang].decideTask;
+                document.querySelector("#selectType option:nth-child(3)").textContent = localization[selectedLang].findError;
+                document.querySelector(".check").textContent = localization[selectedLang].enterHint;
+            });
+            window.onload = function () {
+                document.getElementById("selectLang").dispatchEvent(new Event("change"));
+            };ы
         </script>
     </div>
 </body>
