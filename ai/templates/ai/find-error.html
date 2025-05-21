@@ -174,6 +174,7 @@
 
         .top-preprompt {
             font-size: 18px;
+            display: flex;
         }
 
         .toggle-button {
@@ -248,6 +249,10 @@
         .sidebar.open+.toggle-button svg {
             transform: rotate(0deg);
         }
+
+        .top-preprompt, .check {
+            display: flex;
+        }
     </style>
     <title>DLAPI</title>
 </head>
@@ -268,20 +273,20 @@
                         </select>
                     </div>
                     <div class="top-preprompt">
-                        Препромпт:
+                        <div class="preprompt">Препромпт:</div>
                         <select id="selectPrompt">
                         </select>
 
                     </div>
-                    <h3>Задача:</h3>
+                    <h3 class="task">Задача:</h3>
                     <textarea type="text" id="taskText" class="messageText" placeholder="Вставьте сюда условие задачи"
                         autocomplete="off"></textarea>
-                    <h3>Код программы:</h3>
+                    <h3 class="codetx">Код программы:</h3>
                     <textarea type="text" id="codeText" class="messageText"
                         placeholder="Вставьте сюда ваш код решения задачи, для красивого форматирования оберните код в ```(буква Ё на клавиатуре)"
                         autocomplete="off"></textarea>
                     <div>
-                        <button>Send</button>
+                        <button type="submit">Send</button>
                         <button type="button" onclick="clearContext()">Clear Context</button>
                         <select id="selectLang">
                             <option language="Russian">Русский</option>
@@ -301,11 +306,11 @@
                             onchange="document.location.href=this.querySelector('option:checked').dataset.link">
                             <option data-link="/ai/chat/">Чат с DLAI</option>
                             <option data-link="/ai/decide-task">Реши задачу</option>
-                            <option>В чём ошибка?</option>
+                            <option selected>В чём ошибка?</option>
                         </select>
                         <div class="check">
-                            <input type="checkbox" class="inp" checked> При нажатии на Enter будет отправлятся
-                            вопрос(для переноса строки Enter+Shift)
+                            <input type="checkbox" class="inp" checked> <div class="check-text">При нажатии на Enter будет отправлятся
+                            вопрос(для переноса строки Enter+Shift)</div>
                         </div>
                     </div>
                 </form>
@@ -320,12 +325,14 @@
             <div class="sidebar-content">
             </div>
         </div>
-        <button class="toggle-button">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
-                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="9 18 15 12 9 6" />
-            </svg>
-        </button>
+        <a href="/admin" style="text-decoration: none; color: black;">
+            <button class="toggle-button">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="9 18 15 12 9 6" />
+                </svg>
+            </button>
+        </a>
         <script>
 
             function parseThinkTag(inputText) {
@@ -503,6 +510,73 @@
                 }
             });
 
+            
+            const localization = {
+                Russian: {
+                    send: "Отправить",
+                    clear: "Очистить контекст",
+                    placeholder: "Введите сюда ваш код решения задачи, для красивого форматирования оберните код в ```(буква Ё на клавиатуре)\nПример форматирования кода:\n```\nprint('Hello, world!')\n```",
+                    taskplace: "Вставьте сюда условие задачи",
+                    adminPanel: "Админ-Панель",
+                    chat: "Чат с DLAI",
+                    decideTask: "Реши задачу",
+                    findError: "В чём ошибка?",
+                    enterHint: "При нажатии на Enter будет отправляться вопрос (для переноса строки Enter+Shift)",
+                    preprompt: "Перпромпт",
+                    task: "Задача",
+                    codetx: "Код программы"
+                },
+                English: {
+                    send: "Send",
+                    clear: "Clear Context",
+                    placeholder: "Enter your code for solving the problem here, for beautiful formatting wrap the code in ```\nExample of code formatting:\n```\nprint('Hello, world!')\n```",
+                    taskplace: "Paste the task description here",
+                    adminPanel: "Admin Panel",
+                    chat: "Chat with DLAI",
+                    decideTask: "Solve the task",
+                    findError: "What’s the error?",
+                    enterHint: "Press Enter to send the question (Shift+Enter for a new line)",
+                    preprompt: "Preprompt",
+                    task: "Task",
+                    codetx: "Program code"
+                },
+                French: {
+                    send: "Envoyer",
+                    clear: "Effacer le contexte",
+                    placeholder: "Entrez votre code pour résoudre le problème ici, pour un beau formatage, enveloppez le code dans ```\nExemple de formatage de code :\n```\nprint('Hello, world!')\n```",
+                    taskplace: "Collez la description de la tâche ici",
+                    adminPanel: "Panneau Admin",
+                    chat: "Chat avec DLAI",
+                    decideTask: "Résoudre la tâche",
+                    findError: "Quelle est l'erreur?",
+                    enterHint: "Appuyez sur Entrée pour envoyer la question (Shift+Enter pour une nouvelle ligne)",
+                    preprompt: "Pré-promp",
+                    task: "Tâche",
+                    codetx: "Code du programme"
+                }
+            };
+
+
+            document.getElementById("selectLang").addEventListener("change", function () {
+                const selectedLang = this.options[this.selectedIndex].getAttribute("language");
+                document.querySelector("button[type='submit']").textContent = localization[selectedLang].send;
+                document.querySelector("button[type='button']").textContent = localization[selectedLang].clear;
+                document.getElementById("codeText").setAttribute("placeholder", localization[selectedLang].placeholder);
+                document.getElementById("taskText").setAttribute("placeholder", localization[selectedLang].taskplace);
+                document.querySelector(".sidebar-header").textContent = localization[selectedLang].adminPanel;
+                document.querySelector("#selectType option:nth-child(1)").textContent = localization[selectedLang].chat;
+                document.querySelector("#selectType option:nth-child(2)").textContent = localization[selectedLang].decideTask;
+                document.querySelector("#selectType option:nth-child(3)").textContent = localization[selectedLang].findError;
+                document.querySelector(".check-text").textContent = localization[selectedLang].enterHint;
+                document.querySelector(".preprompt").textContent = localization[selectedLang].preprompt;
+                document.querySelector(".task").textContent = localization[selectedLang].task;
+                document.querySelector(".codetx").textContent = localization[selectedLang].codetx;
+            });
+
+            window.onload = function () {
+                document.getElementById("selectLang").dispatchEvent(new Event("change"));
+            };
+            
 
         </script>
     </div>
