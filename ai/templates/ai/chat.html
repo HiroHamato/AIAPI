@@ -642,6 +642,8 @@
                         li.classList.remove('msg-user', 'msg-assistant');
                         // Создаём кнопку-аккордеон
                         const btn = document.createElement('button');
+                        if (role === 'user') li.classList.add('msg-user');
+                        if (role === 'assistant') li.classList.add('msg-assistant');
                         btn.className = 'accordion';
                         if (role === 'user') btn.classList.add('accordion-user');
                         if (role === 'assistant') btn.classList.add('accordion-assistant');
