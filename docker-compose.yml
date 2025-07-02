@@ -30,7 +30,7 @@ services:
     image: nginx:latest
     container_name: dl_ai_nginx
     ports:
-      - "80:80"
+      - "80:8000"
     volumes:
       - ./nginx:/etc/nginx/conf.d
       - static_volume:/app/static

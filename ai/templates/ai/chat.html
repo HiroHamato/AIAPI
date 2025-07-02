@@ -252,14 +252,13 @@
                             <option value="DeepSeek_R1">DeepSeek-R1</option>
                             <option value="Llama_3_1_Tulu_3_405B">Llama-3.1-Tulu-3-405B</option>
                             <option value="Meta_Llama_3_1_70B_Instruct">Meta-Llama-3-1-70B-Instruct</option>
-                            <option value="Mixtral_8x7B">Mixtral-8x7B</option>
+                            <option value="QwQ_32B">Qwen QwQ-32B</option>
                             <option value="Mixtral_8x22b">Mixtral-8x22b</option>
-                            <option value="Gemma_7b">Gemma-7b</option>
                         </select>
                         <select id="selectType"
                             onchange="document.location.href=this.querySelector('option:checked').dataset.link">
                             <option selected>Чат с DLAI</option>
-                            <option data-link="/ai/decide-task/">Реши задачу</option>
+                            <option data-link="/ai/solve-problem/">Реши задачу</option>
                             <option data-link="/ai/find-error/">В чём ошибка?</option>
                         </select>
                         <div class="check">
@@ -272,7 +271,7 @@
         </div>
 
         <div class="sidebar">
-            <a href="/admin" style="text-decoration: none; color: black;">
+            <a href="/ai/admin" style="text-decoration: none; color: black;">
                 <div class="sidebar-header">
                     Админ-Панель
                 </div>
@@ -281,7 +280,7 @@
             </div>
         </div>
         
-        <a href="/admin" style="text-decoration: none; color: black;">
+        <a href="/ai/admin" style="text-decoration: none; color: black;">
             <button class="toggle-button">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
                     stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -362,9 +361,9 @@
 
 
             var client_id = Date.now()
-
             var wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-            var wsUrl = `${wsProtocol}//${window.location.hostname}:8000/ai/chat/ws/${client_id}`;
+            var wsPort = wsProtocol === 'wss:' ? '443' : '80';
+            var wsUrl = `${wsProtocol}//${window.location.hostname}:${wsPort}/ai/chat/ws/${client_id}`;
             var ws = new WebSocket(wsUrl);
 
 

@@ -24,11 +24,11 @@ from django.contrib import admin
 from django.urls import path, include
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    path('ai/admin/', admin.site.urls),
     path('', include('ai.urls')),
-    path('api/languages/', get_languages, name='get_languages'),
-    path('api/topics/', get_topics, name='get_topics'),
-    path('api/prompts/', get_prompts, name='get_prompts'),
+    path('ai/api/languages/', get_languages, name='get_languages'),
+    path('ai/api/topics/', get_topics, name='get_topics'),
+    path('ai/api/prompts/', get_prompts, name='get_prompts'),
 
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 

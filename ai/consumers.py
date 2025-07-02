@@ -6,10 +6,18 @@ import django
 import os
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'DjangoTest.settings')
 django.setup()
-from .models import ProgrammingLanguage
+from .models import ProgrammingLanguage, Prompt
 from .utils import *
 from asgiref.sync import sync_to_async
-
+@sync_to_async
+def getPromptText(prompt_id):
+    try:
+        return Prompt.objects.get(id=prompt_id).prompt_text
+    except Prompt.DoesNotExist:
+        return None
+    except Exception as e:
+        print(f"Database error: {str(e)}")
+        return None
 @sync_to_async
 def getProgLng(language_id):
     try:
@@ -19,7 +27,6 @@ def getProgLng(language_id):
     except Exception as e:
         print(f"Database error: {str(e)}")
     return None
-
 ADRESS = os.getenv("ADRESS")
 
 proxies = {
@@ -54,8 +61,7 @@ class MyConsumer(AsyncWebsocketConsumer):
         type = data['type']
         message = data['message']              #сообщение
         language = data['language']            #выбранный язык
-        value = data["value"]                  #выбранная модель
-        #смена языка
+        value = data["value"]                  #выбранная модель       
         if self.old_language!= language:
             if language == "Русский":
                 message+= ". Разговаривай со мной только по-русски"
@@ -64,15 +70,21 @@ class MyConsumer(AsyncWebsocketConsumer):
             if language == "English":
                 message += ". Communicate with me only in English"   #Общайся со мной только на английском языке
             self.old_language = language
-
         if type == "2":
-            progLng = await getProgLng(data['progLng'])
-            message = f"У меня есть задача по программированию, решай ее на языке {progLng}\n {message}"
+           progLng = await getProgLng(data['progLng'])
+           promptText = await getPromptText(data['preprompt'])
+           message = f"У меня есть задача по программированию, решай ее на языке {progLng}\n {message}"
+           if not hasattr(self, 'last_prompt') or self.last_prompt != promptText:
+               message += f". Препромпт: {promptText}"
+               self.last_prompt = promptText
         if type == "3":
             progLng = await getProgLng(data['progLng'])
             code = data['code']
-            message = f"У меня есть задача по программированию, я написал для нее код на языке {progLng}, код не работает, найди пожалуйста ошибку. Задача: {message}. Код: {code}"
-
+            promptText = await getPromptText(data['preprompt'])
+            message = f"У меня есть задача по программированию, я написал для нее код на языке {progLng}, код не работает, найди пожалуйста ошибку. Задача: {message}. Код: {code}."
+            if not hasattr(self, 'last_prompt') or self.last_prompt != promptText:
+                message+=f". Препромпт: {promptText}"
+                self.last_prompt = promptText
         await self.send(text_data=f"You: {message}")   #отправка сообщения пользователя
 
         if value == "Meta_Llama_3_1_70B_Instruct":
@@ -81,14 +93,14 @@ class MyConsumer(AsyncWebsocketConsumer):
             response = await ask_Mixtral_8x7B_async(message, self.client_id)
         elif value == "Mixtral_8x22b":
             response = await ask_Mixtral_8x22b_async(message, self.client_id)
-        elif value == "Gemma_7b":
-            response = await ask_Gemma_7b_async(message, self.client_id)
         elif value == "DeepSeek_R1_Distill_Llama_70B":
             response = await ask_DeepSeek_R1_Distill_Llama_70B_async(message, self.client_id)
         elif value == "Llama_3_1_Tulu_3_405B":
             response = await ask_Llama_3_1_Tulu_3_405B_async(message, self.client_id)
         elif value == "DeepSeek_R1":
             response = await ask_DeepSeek_R1_async(message, self.client_id)
+        elif value == "QwQ_32B":
+            response = await ask_QwQ_32B_async(message, self.client_id)
 
 
         await self.send(text_data= f"Assistant: {response}")  #отправка ответа от ИИ

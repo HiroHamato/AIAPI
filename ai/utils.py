@@ -176,24 +176,6 @@ async def ask_Meta_Llama_3_1_70B_Instruct_async(messages: str, user_id: int) -> 
         return 'Что-то пошло не так.'
 
 
-async def ask_Mistral_7B_Instruct_async(messages: str, user_id: int) -> str:
-    if user_id not in hist:
-        hist[user_id] = []
-    client = InferenceClient(
-        "mistralai/Mistral-7B-Instruct-v0.2",
-        token=HF_TOKEN,
-    )
-    answer = ""
-    hist[user_id].append({"role": "user", "content": messages})
-    async for message in client.chat_completion(
-        messages=hist[user_id],
-        max_tokens=9000,
-        stream=True,
-    ):
-        answer += message.choices[0].delta.content
-    hist[user_id].append({"role": "assistant", "content": answer})
-    return answer
-
 
 async def ask_Mistral_Nemo_Instruct_async(messages: str, user_id: int) -> str:
     if user_id not in hist:
@@ -214,24 +196,41 @@ async def ask_Mistral_Nemo_Instruct_async(messages: str, user_id: int) -> str:
     return answer
 
 
-async def ask_Mixtral_8x7B_async(messages: str, user_id: int) -> str:
+async def ask_QwQ_32B_async(messages: str, user_id: int) -> str:
     if user_id not in hist:
         hist[user_id] = []
-    client = InferenceClient(
-        "mistralai/Mixtral-8x7B-Instruct-v0.1",
-        token=HF_TOKEN,
-    )
-    answer = ""
     hist[user_id].append({"role": "user", "content": messages})
-    for message in client.chat_completion(
-        messages=hist[user_id],
-        max_tokens=9000,
-        stream=True,
-    ):
-        answer += message.choices[0].delta.content
-    hist[user_id].append({"role": "assistant", "content": answer})
-    return answer
+    try:
+        response = await asyncio.to_thread(requests.post, 'https://api.sambanova.ai/v1/chat/completions', json={
+            "model": "QwQ-32B",
+            "messages": hist[user_id],
+            "max_tokens": 4000
+        }, headers={
+            'Authorization': f'Bearer {SC_TOKEN}',
+        },
+        proxies=proxies
+        )
 
+        # Логирование статуса ответа и содержимого
+        print(f"Response Status: {response.status_code}")
+        print(f"Response Content: {response.text}")
+
+        response_content = response.content.decode('utf-8')
+        if not response_content:
+            raise ValueError("Пустой ответ от сервера.")
+
+        try:
+            obj = json.loads(response_content)
+        except json.JSONDecodeError as e:
+            print(f"Ошибка при декодировании JSON: {e}")
+            print(f"Содержимое ответа: {response_content}")
+            return 'Что-то пошло не так с обработкой JSON.'
+
+        hist[user_id].append({"role": "assistant", "content": '<think>'+obj['choices'][0]['message']['content']})
+        return '<think>'+obj['choices'][0]['message']['content']
+    except Exception as e:
+        print(f"Общая ошибка: {e}")
+        return 'Что-то пошло не так.'
 
 async def ask_Mixtral_8x22b_async(messages: str, user_id: int) -> str:
     if user_id not in hist:
