@@ -96,8 +96,62 @@
         }
 
         #messages li {
-            margin-bottom: 20px;
             font-size: 18px;
+        }
+
+        .msg-user {
+            background-color: #e6f0ff;
+            border-left: 5px solid #3399ff;
+        }
+
+        .msg-assistant {
+            background-color: #eaffea;
+            border-left: 5px solid #4caf50;
+        }
+
+        .accordion {
+            background-color: #eee;
+            color: #444;
+            cursor: pointer;
+            padding: 10px;
+            width: 100%;
+            border: none;
+            text-align: left;
+            outline: none;
+            font-size: 18px;
+            transition: background-color 0.2s ease;
+            border-radius: 5px;
+            margin: 3px;
+        }
+
+        .accordion-user {
+            background-color: #3399ff;
+            color: #fff;
+        }
+
+        .accordion-user.active, .accordion-user:hover {
+            background-color: #1976d2;
+        }
+
+        .accordion-assistant {
+            background-color: #4caf50;
+            color: #fff;
+        }
+
+        .accordion-assistant.active, .accordion-assistant:hover {
+            background-color: #357a38;
+        }
+
+        .panel {
+            padding: 0 10px;
+            display: none;
+            background-color: white;
+            overflow: hidden;
+            border-radius: 0 0 5px 5px;
+        }
+
+        .panel.open {
+            display: block;
         }
 
         form {
@@ -359,40 +413,89 @@
                 return markdown;
             }
 
-
-            var client_id = Date.now()
+            // ====== БЛОК JS, ЗАВИСЯЩИЙ ОТ БЭКА (ВОССТАНОВЛЕН) ======
+            var client_id = Date.now();
             var wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
             var wsPort = wsProtocol === 'wss:' ? '443' : '80';
             var wsUrl = `${wsProtocol}//${window.location.hostname}:${wsPort}/ai/chat/ws/${client_id}`;
             var ws = new WebSocket(wsUrl);
 
-
-
             ws.onmessage = function (event) {
                 var messages = document.getElementById('messages');
                 var message = document.createElement('li');
                 var inThinkTag = document.createElement('div');
-                console.log(event.data);
                 inThinkTag.classList.add('think');
                 inThinkTag.innerHTML = parseThinkTag(event.data).thinkContent;
                 var mainMess = document.createElement('div');
                 mainMess.innerHTML = parseThinkTag(event.data).remainingText;
-                console.log(mainMess);
-                console.log(inThinkTag);
-                if (parseThinkTag(event.data).thinkContent) {
-                    message.appendChild(inThinkTag);
-                }
                 const mainMessText = mainMess.innerText || "";
-                console.log(mainMessText);
                 const parsedHTML = convertMarkdownToHTML(mainMessText);
                 const messageContent = document.createElement('div');
                 messageContent.innerHTML = parsedHTML;
+                // --- Accordion logic start ---
+                // Сворачиваем все предыдущие сообщения, кроме последнего
+                const allMessages = messages.querySelectorAll('li');
+                // Определяем роли для сообщений (чередование: Вы, Ассистент, Други...)
+                const roles = [];
+                for (let i = 0; i < allMessages.length; i++) {
+                    if (i % 2 === 0) roles.push('user');
+                    else roles.push('assistant');
+                }
+                allMessages.forEach(function (li, idx) {
+                    if (!li.classList.contains('accordion-li')) {
+                        li.classList.add('accordion-li');
+                        // Назначаем цветовой класс по роли
+                        const role = roles[idx] || 'other';
+                        li.classList.remove('msg-user', 'msg-assistant');
+                        if (role === 'user') li.classList.add('msg-user');
+                        if (role === 'assistant') li.classList.add('msg-assistant');
+                        // Создаём кнопку-аккордеон
+                        const btn = document.createElement('button');
+                        btn.className = 'accordion';
+                        if (role === 'user') btn.classList.add('accordion-user');
+                        if (role === 'assistant') btn.classList.add('accordion-assistant');
+                        // Получаем текущий язык
+                        const selectLang = document.getElementById('selectLang');
+                        const langAttr = selectLang.options[selectLang.selectedIndex].getAttribute('language');
+                        const roleLabels = {
+                            Russian: { user: 'Вы', assistant: 'Ассистент', other: 'Други' },
+                            English: { user: 'You', assistant: 'Assistant', other: 'Others' },
+                            French: { user: 'Vous', assistant: 'Assistant', other: 'Autres' }
+                        };
+                        function getRoleLabel(role, lang) {
+                            return (roleLabels[lang] && roleLabels[lang][role]) ? roleLabels[lang][role] : role;
+                        }
+                        btn.textContent = `Показать: ${getRoleLabel(role, langAttr)}`;
+                        // Создаём панель
+                        const panel = document.createElement('div');
+                        panel.className = 'panel';
+                        // Перемещаем содержимое сообщения в панель
+                        while (li.firstChild) {
+                            panel.appendChild(li.firstChild);
+                        }
+                        li.appendChild(btn);
+                        li.appendChild(panel);
+                        btn.addEventListener('click', function () {
+                            panel.classList.toggle('open');
+                            btn.classList.toggle('active');
+                            btn.textContent = panel.classList.contains('open')
+                                ? `Скрыть: ${getRoleLabel(role, langAttr)}`
+                                : `Показать: ${getRoleLabel(role, langAttr)}`;
+                        });
+                    }
+                });
+                // Добавляем новое сообщение как последнее (открытое)
+                if (parseThinkTag(event.data).thinkContent) {
+                    message.appendChild(inThinkTag);
+                }
                 message.appendChild(messageContent);
                 messages.appendChild(message);
                 messages.scrollTo({ top: messages.scrollHeight, behavior: 'smooth' });
                 var input = document.getElementById("messageText");
                 input.value = '';
                 notEnter = false;
+                // Переинициализируем аккордеоны для новых сообщений
+                initAccordionForMessages();
             };
 
             function sendMessage(event) {
@@ -421,15 +524,22 @@
                 }
             }
 
+            let notEnter = false;
+            document.addEventListener("keydown", function (event) {
+                const checkbox = document.querySelector(".inp");
+                if (event.key === "Enter" && checkbox.checked && !event.shiftKey && !notEnter) {
+                    notEnter = true;
+                    sendMessage(event);
+                }
+            });
+            // ====== КОНЕЦ БЛОКА JS, ЗАВИСЯЩЕГО ОТ БЭКА ======
+
             const toggleButton = document.querySelector('.toggle-button');
             const sidebar = document.querySelector('.sidebar');
 
             toggleButton.addEventListener('click', () => {
                 sidebar.classList.toggle('open');
             });
-
-            let notEnter = false
-
 
             let isResizing = false;
 
@@ -456,13 +566,6 @@
                 window.removeEventListener('mouseup', stopResize);
             }
 
-            document.addEventListener("keydown", function (event) {
-                const checkbox = document.querySelector(".inp");
-                if (event.key === "Enter" && checkbox.checked && !event.shiftKey && !notEnter) {
-                    notEnter = true
-                    sendMessage(event);
-                }
-            });
             const localization = {
                 Russian: {
                     send: "Отправить",
@@ -481,7 +584,7 @@
                     adminPanel: "Admin Panel",
                     chat: "Chat with DLAI",
                     decideTask: "Solve the task",
-                    findError: "What’s the error?",
+                    findError: "What's the error?",
                     enterHint: "Press Enter to send the question (Shift+Enter for a new line)"
                 },
                 French: {
@@ -496,7 +599,6 @@
                 }
             };
 
-
             document.getElementById("selectLang").addEventListener("change", function () {
                 const selectedLang = this.options[this.selectedIndex].getAttribute("language");
                 document.querySelector("button[type='submit']").textContent = localization[selectedLang].send;
@@ -507,10 +609,105 @@
                 document.querySelector("#selectType option:nth-child(2)").textContent = localization[selectedLang].decideTask;
                 document.querySelector("#selectType option:nth-child(3)").textContent = localization[selectedLang].findError;
                 document.querySelector(".check-text").textContent = localization[selectedLang].enterHint;
+                updateAccordionLabels();
             });
+
+            // Функция для инициализации аккордеона для всех сообщений
+            function initAccordionForMessages() {
+                const messages = document.getElementById('messages');
+                const allMessages = messages.querySelectorAll('li');
+                // Определяем роли для сообщений (чередование: Вы, Ассистент, Други...)
+                const roles = [];
+                for (let i = 0; i < allMessages.length; i++) {
+                    if (i % 2 === 0) roles.push('user');
+                    else roles.push('assistant');
+                }
+                // Получаем текущий язык
+                const selectLang = document.getElementById('selectLang');
+                const langAttr = selectLang.options[selectLang.selectedIndex].getAttribute('language');
+                const roleLabels = {
+                    Russian: { user: 'Вы', assistant: 'Ассистент', other: 'Други' },
+                    English: { user: 'You', assistant: 'Assistant', other: 'Others' },
+                    French: { user: 'Vous', assistant: 'Assistant', other: 'Autres' }
+                };
+                function getRoleLabel(role, lang) {
+                    return (roleLabels[lang] && roleLabels[lang][role]) ? roleLabels[lang][role] : role;
+                }
+                allMessages.forEach(function (li, idx) {
+                    if (!li.classList.contains('accordion-li')) {
+                        li.classList.add('accordion-li');
+                        // Назначаем цветовой класс по роли
+                        const role = roles[idx] || 'other';
+                        li.classList.remove('msg-user', 'msg-assistant');
+                        // Создаём кнопку-аккордеон
+                        const btn = document.createElement('button');
+                        btn.className = 'accordion';
+                        if (role === 'user') btn.classList.add('accordion-user');
+                        if (role === 'assistant') btn.classList.add('accordion-assistant');
+                        btn.textContent = `Показать: ${getRoleLabel(role, langAttr)}`;
+                        // Создаём панель
+                        const panel = document.createElement('div');
+                        panel.className = 'panel';
+                        // Перемещаем содержимое сообщения в панель
+                        while (li.firstChild) {
+                            panel.appendChild(li.firstChild);
+                        }
+                        li.appendChild(btn);
+                        li.appendChild(panel);
+                        btn.addEventListener('click', function () {
+                            panel.classList.toggle('open');
+                            btn.classList.toggle('active');
+                            btn.textContent = panel.classList.contains('open')
+                                ? `Скрыть: ${getRoleLabel(role, langAttr)}`
+                                : `Показать: ${getRoleLabel(role, langAttr)}`;
+                        });
+                    }
+                });
+                // Открываем только последний
+                if (allMessages.length > 0) {
+                    const lastLi = allMessages[allMessages.length - 1];
+                    const lastBtn = lastLi.querySelector('.accordion');
+                    const lastPanel = lastLi.querySelector('.panel');
+                    if (lastBtn && lastPanel) {
+                        lastPanel.classList.add('open');
+                        lastBtn.classList.add('active');
+                        const lastRole = roles[allMessages.length - 1] || 'other';
+                        lastBtn.textContent = `Скрыть: ${getRoleLabel(lastRole, langAttr)}`;
+                    }
+                }
+                // Сохраняем для обновления при смене языка
+                window._accordionRoles = roles;
+            }
+
+            // Функция для обновления подписей на аккордеонах при смене языка
+            function updateAccordionLabels() {
+                const selectLang = document.getElementById('selectLang');
+                const langAttr = selectLang.options[selectLang.selectedIndex].getAttribute('language');
+                const roleLabels = {
+                    Russian: { user: 'Вы', assistant: 'Ассистент', other: 'Други' },
+                    English: { user: 'You', assistant: 'Assistant', other: 'Others' },
+                    French: { user: 'Vous', assistant: 'Assistant', other: 'Autres' }
+                };
+                function getRoleLabel(role, lang) {
+                    return (roleLabels[lang] && roleLabels[lang][role]) ? roleLabels[lang][role] : role;
+                }
+                const allMessages = document.getElementById('messages').querySelectorAll('li');
+                const roles = window._accordionRoles || [];
+                allMessages.forEach(function (li, idx) {
+                    const btn = li.querySelector('.accordion');
+                    const panel = li.querySelector('.panel');
+                    if (btn && panel) {
+                        const role = roles[idx] || 'other';
+                        btn.textContent = panel.classList.contains('open')
+                            ? `Скрыть: ${getRoleLabel(role, langAttr)}`
+                            : `Показать: ${getRoleLabel(role, langAttr)}`;
+                    }
+                });
+            }
 
             window.onload = function () {
                 document.getElementById("selectLang").dispatchEvent(new Event("change"));
+                initAccordionForMessages();
             };
         </script>
     </div>

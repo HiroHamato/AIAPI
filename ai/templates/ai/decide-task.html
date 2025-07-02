@@ -1,4 +1,3 @@
-
 <!doctype html>
 <html lang="en">
 
@@ -249,6 +248,53 @@
 
         .sidebar.open+.toggle-button svg {
             transform: rotate(0deg);
+        }
+
+        .msg-user {
+            background-color: #e6f0ff;
+            border-left: 5px solid #3399ff;
+        }
+        .msg-assistant {
+            background-color: #eaffea;
+            border-left: 5px solid #4caf50;
+        }
+        .accordion {
+            background-color: #eee;
+            color: #444;
+            cursor: pointer;
+            padding: 10px;
+            width: 100%;
+            border: none;
+            text-align: left;
+            outline: none;
+            font-size: 18px;
+            transition: background-color 0.2s ease;
+            border-radius: 5px;
+            margin: 3px;
+        }
+        .accordion-user {
+            background-color: #3399ff;
+            color: #fff;
+        }
+        .accordion-user.active, .accordion-user:hover {
+            background-color: #1976d2;
+        }
+        .accordion-assistant {
+            background-color: #4caf50;
+            color: #fff;
+        }
+        .accordion-assistant.active, .accordion-assistant:hover {
+            background-color: #357a38;
+        }
+        .panel {
+            padding: 0 10px;
+            display: none;
+            background-color: white;
+            overflow: hidden;
+            border-radius: 0 0 5px 5px;
+        }
+        .panel.open {
+            display: block;
         }
     </style>
     <title>DLAPI</title>
@@ -523,7 +569,7 @@
                     adminPanel: "Admin Panel",
                     chat: "Chat with DLAI",
                     decideTask: "Solve the task",
-                    findError: "What’s the error?",
+                    findError: "What's the error?",
                     enterHint: "Press Enter to send the question (Shift+Enter for a new line)",
                     preprompt: "Preprompt"
                 },
@@ -626,4 +672,97 @@
         await loadLanguages();
     });
 
+</script>
+
+<script>
+    function initAccordionForMessages() {
+        const messages = document.getElementById('messages');
+        const allMessages = messages.querySelectorAll('li');
+        const roles = [];
+        for (let i = 0; i < allMessages.length; i++) {
+            if (i % 2 === 0) roles.push('user');
+            else roles.push('assistant');
+        }
+        const selectLang = document.getElementById('selectLang');
+        const langAttr = selectLang.options[selectLang.selectedIndex].getAttribute('language');
+        const roleLabels = {
+            Russian: { user: 'Вы', assistant: 'Ассистент', other: 'Други' },
+            English: { user: 'You', assistant: 'Assistant', other: 'Others' },
+            French: { user: 'Vous', assistant: 'Assistant', other: 'Autres' }
+        };
+        function getRoleLabel(role, lang) {
+            return (roleLabels[lang] && roleLabels[lang][role]) ? roleLabels[lang][role] : role;
+        }
+        allMessages.forEach(function (li, idx) {
+            if (!li.classList.contains('accordion-li')) {
+                li.classList.add('accordion-li');
+                const role = roles[idx] || 'other';
+                li.classList.remove('msg-user', 'msg-assistant');
+                if (role === 'user') li.classList.add('msg-user');
+                if (role === 'assistant') li.classList.add('msg-assistant');
+                const btn = document.createElement('button');
+                btn.className = 'accordion';
+                if (role === 'user') btn.classList.add('accordion-user');
+                if (role === 'assistant') btn.classList.add('accordion-assistant');
+                btn.textContent = `Показать: ${getRoleLabel(role, langAttr)}`;
+                const panel = document.createElement('div');
+                panel.className = 'panel';
+                while (li.firstChild) {
+                    panel.appendChild(li.firstChild);
+                }
+                li.appendChild(btn);
+                li.appendChild(panel);
+                btn.addEventListener('click', function () {
+                    panel.classList.toggle('open');
+                    btn.classList.toggle('active');
+                    btn.textContent = panel.classList.contains('open')
+                        ? `Скрыть: ${getRoleLabel(role, langAttr)}`
+                        : `Показать: ${getRoleLabel(role, langAttr)}`;
+                });
+            }
+        });
+        if (allMessages.length > 0) {
+            const lastLi = allMessages[allMessages.length - 1];
+            const lastBtn = lastLi.querySelector('.accordion');
+            const lastPanel = lastLi.querySelector('.panel');
+            if (lastBtn && lastPanel) {
+                lastPanel.classList.add('open');
+                lastBtn.classList.add('active');
+                const lastRole = roles[allMessages.length - 1] || 'other';
+                lastBtn.textContent = `Скрыть: ${getRoleLabel(lastRole, langAttr)}`;
+            }
+        }
+        window._accordionRoles = roles;
+    }
+    function updateAccordionLabels() {
+        const selectLang = document.getElementById('selectLang');
+        const langAttr = selectLang.options[selectLang.selectedIndex].getAttribute('language');
+        const roleLabels = {
+            Russian: { user: 'Вы', assistant: 'Ассистент', other: 'Други' },
+            English: { user: 'You', assistant: 'Assistant', other: 'Others' },
+            French: { user: 'Vous', assistant: 'Assistant', other: 'Autres' }
+        };
+        function getRoleLabel(role, lang) {
+            return (roleLabels[lang] && roleLabels[lang][role]) ? roleLabels[lang][role] : role;
+        }
+        const allMessages = document.getElementById('messages').querySelectorAll('li');
+        const roles = window._accordionRoles || [];
+        allMessages.forEach(function (li, idx) {
+            const btn = li.querySelector('.accordion');
+            const panel = li.querySelector('.panel');
+            if (btn && panel) {
+                const role = roles[idx] || 'other';
+                btn.textContent = panel.classList.contains('open')
+                    ? `Скрыть: ${getRoleLabel(role, langAttr)}`
+                    : `Показать: ${getRoleLabel(role, langAttr)}`;
+            }
+        });
+    }
+    window.onload = function () {
+        document.getElementById("selectLang").dispatchEvent(new Event("change"));
+        initAccordionForMessages();
+    }
+    document.getElementById("selectLang").addEventListener("change", function () {
+        updateAccordionLabels();
+    });
 </script>
