@@ -472,6 +472,9 @@
                 var input = document.getElementById("messageText");
                 input.value = '';
                 notEnter = false;
+                // Переинициализируем аккордеоны для новых сообщений
+                initAccordionForMessages();
+                collapseAllExceptLast();
             };
 
 
@@ -765,4 +768,23 @@
     document.getElementById("selectLang").addEventListener("change", function () {
         updateAccordionLabels();
     });
+</script>
+
+<script>
+    function collapseAllExceptLast() {
+        const allMessages = document.getElementById('messages').querySelectorAll('li');
+        allMessages.forEach((li, idx) => {
+            const btn = li.querySelector('.accordion');
+            const panel = li.querySelector('.panel');
+            if (btn && panel) {
+                if (idx === allMessages.length - 1) {
+                    panel.classList.add('open');
+                    btn.classList.add('active');
+                } else {
+                    panel.classList.remove('open');
+                    btn.classList.remove('active');
+                }
+            }
+        });
+    }
 </script>

@@ -496,6 +496,7 @@
                 notEnter = false;
                 // Переинициализируем аккордеоны для новых сообщений
                 initAccordionForMessages();
+                collapseAllExceptLast();
             };
 
             function sendMessage(event) {
@@ -701,6 +702,23 @@
                         btn.textContent = panel.classList.contains('open')
                             ? `Скрыть: ${getRoleLabel(role, langAttr)}`
                             : `Показать: ${getRoleLabel(role, langAttr)}`;
+                    }
+                });
+            }
+
+            function collapseAllExceptLast() {
+                const allMessages = document.getElementById('messages').querySelectorAll('li');
+                allMessages.forEach((li, idx) => {
+                    const btn = li.querySelector('.accordion');
+                    const panel = li.querySelector('.panel');
+                    if (btn && panel) {
+                        if (idx === allMessages.length - 1) {
+                            panel.classList.add('open');
+                            btn.classList.add('active');
+                        } else {
+                            panel.classList.remove('open');
+                            btn.classList.remove('active');
+                        }
                     }
                 });
             }
