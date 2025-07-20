@@ -415,6 +415,33 @@
 
             // ====== БЛОК JS, ЗАВИСЯЩИЙ ОТ БЭКА (ВОССТАНОВЛЕН) ======
             var client_id = Date.now();
+            // ===== DLSID из cookies =====
+            function getCookie(name) {
+                const value = `; ${document.cookie}`;
+                const parts = value.split(`; ${name}=`);
+                if (parts.length === 2) return parts.pop().split(';').shift();
+                return '';
+            }
+            function decodeDLSID(raw) {
+                if (!raw) return '';
+                try {
+                    const decoded = decodeURIComponent(raw);
+                    // Преобразуем %7B...%7D в {...} и %2D в -
+                    // Обычно decodeURIComponent уже это делает
+                    // Проверим, что строка в формате {....}
+                    if (/^\{[A-F0-9\-]+\}$/i.test(decoded)) {
+                        return decoded;
+                    }
+                } catch (e) {}
+                return '';
+            }
+            var dlsid = decodeDLSID(getCookie('DLSID'));
+
+            if (!dlsid) {
+                document.body.innerHTML = '<div style="color: red; font-size: 1.5em; text-align: center; margin-top: 50px;">Нет доступа: отсутствует DLSID.</div>';
+                throw new Error("Нет доступа: отсутствует DLSID.");
+            }
+
             var wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
             var wsPort = wsProtocol === 'wss:' ? '443' : '80';
             var wsUrl = `${wsProtocol}//${window.location.hostname}:${wsPort}/ai/chat/ws/${client_id}`;
@@ -434,7 +461,7 @@
                 messageContent.innerHTML = parsedHTML;
                 // --- Accordion logic start ---
                 // Сворачиваем все предыдущие сообщения, кроме последнего
-                const allMessages = messages.querySelectorAll('li');
+                const allMessages = messages.querySelectorAll(':scope > li');
                 // Определяем роли для сообщений (чередование: Вы, Ассистент, Други...)
                 const roles = [];
                 for (let i = 0; i < allMessages.length; i++) {
@@ -442,7 +469,8 @@
                     else roles.push('assistant');
                 }
                 allMessages.forEach(function (li, idx) {
-                    if (!li.classList.contains('accordion-li')) {
+                    // Новая проверка: если внутри li уже есть аккордеон, не оборачивать повторно
+                    if (!li.classList.contains('accordion-li') && !li.querySelector('.accordion')) {
                         li.classList.add('accordion-li');
                         // Назначаем цветовой класс по роли
                         const role = roles[idx] || 'other';
@@ -616,13 +644,14 @@
             // Функция для инициализации аккордеона для всех сообщений
             function initAccordionForMessages() {
                 const messages = document.getElementById('messages');
-                const allMessages = messages.querySelectorAll('li');
+                const allMessages = messages.querySelectorAll(':scope > li');
                 // Определяем роли для сообщений (чередование: Вы, Ассистент, Други...)
                 const roles = [];
                 for (let i = 0; i < allMessages.length; i++) {
                     if (i % 2 === 0) roles.push('user');
                     else roles.push('assistant');
                 }
+                console.log(allMessages);
                 // Получаем текущий язык
                 const selectLang = document.getElementById('selectLang');
                 const langAttr = selectLang.options[selectLang.selectedIndex].getAttribute('language');
@@ -639,6 +668,7 @@
                         li.classList.add('accordion-li');
                         // Назначаем цветовой класс по роли
                         const role = roles[idx] || 'other';
+                        console.log(role, idx, allMessages);
                         li.classList.remove('msg-user', 'msg-assistant');
                         // Создаём кнопку-аккордеон
                         const btn = document.createElement('button');
