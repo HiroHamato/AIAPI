@@ -21,5 +21,5 @@ class Prompt(models.Model):
     prompt_text = models.TextField()
     prompt_name = models.CharField(max_length=255, null = True)
     def __str__(self):
-        return self.prompt_text
-    
+        # Возвращаем только имя промпта вместо полного текста
+        return self.prompt_name if self.prompt_name else f"Prompt #{self.id}"    

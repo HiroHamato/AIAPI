@@ -302,8 +302,8 @@
                             <option language="French">Français</option>
                         </select>
                         <select id="select">
-                            <option value="DeepSeek_R1_Distill_Llama_70B">DeepSeek-R1-Distill-Llama-70B</option>
                             <option value="DeepSeek_R1">DeepSeek-R1</option>
+                            <option value="DeepSeek_R1_Distill_Llama_70B">DeepSeek-R1-Distill-Llama-70B</option>
                             <option value="Llama_3_1_Tulu_3_405B">Llama-3.1-Tulu-3-405B</option>
                             <option value="Meta_Llama_3_1_70B_Instruct">Meta-Llama-3-1-70B-Instruct</option>
                             <option value="QwQ_32B">Qwen QwQ-32B</option>
@@ -415,6 +415,75 @@
 
             // ====== БЛОК JS, ЗАВИСЯЩИЙ ОТ БЭКА (ВОССТАНОВЛЕН) ======
             var client_id = Date.now();
+            // ===== DLSID из cookies =====
+            function getCookie(name) {
+                const value = `; ${document.cookie}`;
+                const parts = value.split(`; ${name}=`);
+                if (parts.length === 2) return parts.pop().split(';').shift();
+                return '';
+            }
+            function decodeDLSID(raw) {
+                if (!raw) return '';
+                try {
+                    const decoded = decodeURIComponent(raw);
+                    // Преобразуем %7B...%7D в {...} и %2D в -
+                    // Обычно decodeURIComponent уже это делает
+                    // Проверим, что строка в формате {....}
+                    if (/^\{[A-F0-9\-]+\}$/i.test(decoded)) {
+                        return decoded;
+                    }
+                } catch (e) {}
+                return '';
+            }
+            var dlsid = decodeDLSID(getCookie('DLSID'));
+            var canUseAi = false;
+
+async function fetchCanUseAi(sessionId) {
+    if (!sessionId) {
+        document.body.innerHTML = '<div style="color: red; font-weight: bold; font-size: 1.5rem;">Ошибка: отсутствует sessionId</div>';
+        return null; // Возвращаем null для прерывания цепочки
+    }
+    
+    try {
+        const response = await fetch('https://dl.gsu.by/restapi/get-user-info', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ sessionId })
+        });
+        
+        if (!response.ok) throw new Error('Network response was not ok');
+        
+        const data = await response.json();
+        const canUseAi = data.canUseAi;
+        const nodeId = data.nodeId; // Извлекаем nodeId из ответа
+        
+        if (canUseAi === false) {
+            document.body.innerHTML = '<div style="color: red; font-weight: bold; font-size: 1.5rem;">У вас нет доступа к ИИ</div>';
+            return null;
+        }
+        
+        return nodeId; // Возвращаем nodeId при успехе
+        
+    } catch (e) {
+        document.body.innerHTML = '<div style="color: red; font-weight: bold; font-size: 1.5rem;">Ошибка при проверке доступа</div>';
+        return null;
+    }
+}
+
+// Вызов функции и обработка результата
+fetchCanUseAi(dlsid).then(nodeId => {
+    if (nodeId && document.getElementById('messageText')) {
+        // Используем полученный nodeId для запроса
+        fetch(`https://dl.gsu.by/restapi/get-task-info?nodeId=${nodeId}`)
+            .then(resp => resp.json())
+            .then(data => {
+                if (data?.statement) {
+                    document.getElementById('messageText').value = data.statement;
+                }
+            });
+    }
+});
+
             var wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
             var wsPort = wsProtocol === 'wss:' ? '443' : '80';
             var wsUrl = `${wsProtocol}//${window.location.hostname}:${wsPort}/ai/chat/ws/${client_id}`;
@@ -434,7 +503,7 @@
                 messageContent.innerHTML = parsedHTML;
                 // --- Accordion logic start ---
                 // Сворачиваем все предыдущие сообщения, кроме последнего
-                const allMessages = messages.querySelectorAll('li');
+                const allMessages = messages.querySelectorAll(':scope > li');
                 // Определяем роли для сообщений (чередование: Вы, Ассистент, Други...)
                 const roles = [];
                 for (let i = 0; i < allMessages.length; i++) {
@@ -442,7 +511,8 @@
                     else roles.push('assistant');
                 }
                 allMessages.forEach(function (li, idx) {
-                    if (!li.classList.contains('accordion-li')) {
+                    // Новая проверка: если внутри li уже есть аккордеон, не оборачивать повторно
+                    if (!li.classList.contains('accordion-li') && !li.querySelector('.accordion')) {
                         li.classList.add('accordion-li');
                         // Назначаем цветовой класс по роли
                         const role = roles[idx] || 'other';
@@ -616,13 +686,14 @@
             // Функция для инициализации аккордеона для всех сообщений
             function initAccordionForMessages() {
                 const messages = document.getElementById('messages');
-                const allMessages = messages.querySelectorAll('li');
+                const allMessages = messages.querySelectorAll(':scope > li');
                 // Определяем роли для сообщений (чередование: Вы, Ассистент, Други...)
                 const roles = [];
                 for (let i = 0; i < allMessages.length; i++) {
                     if (i % 2 === 0) roles.push('user');
                     else roles.push('assistant');
                 }
+                console.log(allMessages);
                 // Получаем текущий язык
                 const selectLang = document.getElementById('selectLang');
                 const langAttr = selectLang.options[selectLang.selectedIndex].getAttribute('language');
@@ -639,6 +710,7 @@
                         li.classList.add('accordion-li');
                         // Назначаем цветовой класс по роли
                         const role = roles[idx] || 'other';
+                        console.log(role, idx, allMessages);
                         li.classList.remove('msg-user', 'msg-assistant');
                         // Создаём кнопку-аккордеон
                         const btn = document.createElement('button');
@@ -748,3 +820,4 @@
 </body>
 
 </html>
+

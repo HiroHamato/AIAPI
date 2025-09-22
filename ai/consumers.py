@@ -50,7 +50,6 @@ class MyConsumer(AsyncWebsocketConsumer):
 
     async def receive(self, text_data):
         data = json.loads(text_data)
-
         #Обработка нажатия кнопки Clear Context
         if data.get('action') == 'clear_context':
             hist[self.client_id] = []

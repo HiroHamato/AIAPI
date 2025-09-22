@@ -88,6 +88,7 @@ ASGI_APPLICATION = 'DjangoTest.asgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
+CSRF_TRUSTED_ORIGINS = ['http://dl.gsu.by', 'https://dl.gsu.by']
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
